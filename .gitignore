@@ -23,7 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
-# Variáveis de ambiente locais (use .env.example como referência)
+# Variáveis de ambiente locais (use .env.example como referência).
+# `.env.production` é versionado: contém apenas a URL pública do backend.
 .env
 .env.*
 !.env.example
+!.env.production

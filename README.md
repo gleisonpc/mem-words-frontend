@@ -10,7 +10,9 @@ Aplicativo para ajudar a memorizar palavras — frontend em React + Vite.
 ## Configuração
 
 O frontend precisa saber onde o backend está rodando. Isso é feito pela
-variável de ambiente `VITE_API_URL`:
+variável de ambiente `VITE_API_URL`.
+
+### Desenvolvimento
 
 ```bash
 cp .env.example .env
@@ -25,8 +27,24 @@ VITE_API_URL=http://localhost:8080
 O arquivo `.env` não é versionado. Caso a variável não esteja definida, o
 aplicativo usa `http://localhost:8080` como padrão.
 
+### Produção
+
+O arquivo `.env.production` é versionado e já aponta para o backend publicado
+no Render:
+
+```
+VITE_API_URL=https://mem-words-backend.onrender.com
+```
+
+O Vite carrega esse arquivo automaticamente em `npm run build`, então o deploy
+não precisa de configuração extra. Para apontar para outro backend sem alterar
+o repositório, basta definir `VITE_API_URL` no ambiente de build (por exemplo,
+no painel do Render): variáveis do ambiente têm precedência sobre os arquivos
+`.env`.
+
 > Variáveis lidas pelo Vite precisam do prefixo `VITE_` e são embutidas no
-> bundle em tempo de build — não guarde segredos nelas.
+> bundle em tempo de build — não guarde segredos nelas. A URL do backend é
+> pública, por isso pode ser versionada.
 
 ## Scripts
 
