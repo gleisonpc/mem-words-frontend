@@ -46,7 +46,7 @@ Vercel e publique novamente.
 
 ### Diagnóstico
 
-A própria tela informa de onde veio a URL deste build:
+A tela `/diagnostico` informa de onde veio a URL deste build:
 
 | O que aparece | O que significa |
 | :--- | :--- |
@@ -65,10 +65,83 @@ npm run preview  # serve o bundle de produção localmente
 npm run lint     # analisa o código com oxlint
 ```
 
-## Tela inicial
+## Rotas
 
-A tela inicial consulta o endpoint `GET /health` do backend (usando
-`VITE_API_URL`) assim que carrega e mostra o resultado:
+| Rota | Tela | Acesso |
+| :--- | :--- | :--- |
+| `/entrar` | Entrada por e-mail e senha | pública; com sessão ativa, redireciona para `/` |
+| `/cadastro` | Criação de conta | pública; com sessão ativa, redireciona para `/` |
+| `/` | Início da área autenticada | **protegida** |
+| `/diagnostico` | Status da conexão com o backend | pública |
+| `/galeria` | Galeria do design system | pública |
+| qualquer outra | Página não encontrada | pública |
+
+Uma rota protegida só é exibida com sessão ativa. Quem chega sem sessão é
+levado a `/entrar` e, depois de autenticar, volta ao endereço que tentou
+abrir. Enquanto a sessão guardada está sendo confirmada, a tela mostra
+carregamento — e não a tela de entrada, que apareceria e desapareceria a cada
+recarga.
+
+`/diagnostico` é pública de propósito: é a ferramenta para descobrir que o
+backend está fora do ar, o que inclui o caso em que a entrada não funciona
+por isso.
+
+> **Deploy:** as rotas são resolvidas no navegador, então o host precisa
+> devolver `index.html` para qualquer endereço — sem isso, abrir
+> `/entrar` direto responde 404 (verificado servindo `dist/` em um servidor
+> estático puro). É o que o `vercel.json` na raiz faz, com uma regra de
+> reescrita para `/index.html`.
+
+> A galeria era alcançável por `?galeria` na URL. Agora que a aplicação tem
+> rotas de verdade, ela mora em `/galeria`; o parâmetro antigo não tem mais
+> efeito.
+
+## Autenticação
+
+O backend ([mem-words-backend](https://github.com/gleisonpc/mem-words-backend))
+emite dois tokens no login, e este frontend consome os endpoints
+`POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`,
+`POST /auth/logout` e `GET /users/me`.
+
+| Token | O que é | Onde vai |
+| :--- | :--- | :--- |
+| **Access token** | JWT curto (15min) | cabeçalho `Authorization: Bearer` de cada chamada autenticada |
+| **Refresh token** | valor opaco, de uso único | corpo das chamadas de renovação e de saída |
+
+**Onde os tokens ficam guardados.** Em `localStorage`, sob a chave
+`mem-words.auth`, junto com os dados do usuário. É o que permite recarregar a
+página sem entrar de novo. A contrapartida é conhecida e aceita: um XSS no
+frontend alcançaria o token, porque o backend devolve os tokens no corpo da
+resposta em vez de gravar um cookie `httpOnly`. A decisão, suas alternativas e
+o que o backend teria de mudar estão registrados em
+`openspec/changes/archive/*-add-authentication/design.md`.
+
+Quando o armazenamento não está disponível — janela privativa, dados de site
+bloqueados —, a aplicação continua funcionando; a sessão passa a valer apenas
+enquanto a página estiver aberta.
+
+**Sessão guardada não é sessão válida.** Ao abrir a aplicação, os tokens
+guardados são conferidos contra `GET /users/me` antes de a sessão ser
+considerada ativa: eles podem estar expirados, revogados ou pertencer a uma
+conta excluída. Se o backend estiver inacessível, os tokens **não** são
+apagados e a tela informa falha de conexão — uma queda de rede não deslogaria
+ninguém.
+
+**Renovação automática.** Uma resposta `401` em chamada autenticada dispara
+uma renovação e repete a requisição original uma única vez. Como o refresh
+token é de uso único e reapresentá-lo faz o backend revogar todas as sessões
+do usuário, renovações concorrentes na mesma aba convergem para uma única
+chamada — quem chega durante uma renovação aguarda a mesma promessa.
+
+> Duas abas cujos tokens expirem no mesmo instante ainda podem apresentar o
+> mesmo refresh token, o que o backend trata como reuso e derruba a sessão. O
+> caminho de recuperação é entrar de novo; sincronizar as abas é melhoria
+> registrada para depois.
+
+## Tela de diagnóstico
+
+`/diagnostico` consulta o endpoint `GET /health` do backend assim que carrega
+e mostra o resultado:
 
 - **ok** — o backend respondeu com sucesso; o corpo da resposta é exibido
   abaixo do status.
@@ -81,15 +154,33 @@ O botão *Verificar novamente* repete a consulta sem recarregar a página.
 
 ```
 src/
-├── api/health.js              # chamada ao endpoint /health
-├── components/HealthStatus.jsx # exibição do status da conexão
+├── api/
+│   ├── ApiError.js            # falha de chamada em formato único
+│   ├── client.js              # cliente HTTP: tempo limite, erros, renovação
+│   ├── auth.js                # /auth/register, /login, /refresh, /logout
+│   ├── users.js               # /users/me
+│   └── health.js              # /health
+├── auth/
+│   ├── tokenStore.js          # tokens em memória, espelhados no localStorage
+│   ├── session.js             # contexto, estados e erro de cadastro sem sessão
+│   ├── AuthProvider.jsx       # ciclo de vida da sessão
+│   ├── useAuth.js             # acesso das telas à sessão
+│   ├── useAuthForm.js         # estado comum dos formulários de autenticação
+│   ├── validation.js          # regras espelhando as do backend
+│   ├── RequireAuth.jsx        # guarda de rota
+│   └── GuestOnly.jsx          # mantém quem tem sessão fora de entrar/cadastro
+├── components/                # design system, moldura autenticada, status
+├── pages/                     # entrada, cadastro, início, diagnóstico, 404
+├── routes.jsx                 # mapa de rotas
 ├── config.js                  # leitura de VITE_API_URL
-└── App.jsx                    # tela inicial
+└── App.jsx                    # provedor de sessão + roteador
 ```
 
-> Se o backend estiver em outra origem, ele precisa liberar CORS para a origem
-> do frontend, caso contrário o navegador bloqueia a requisição e a tela mostra
-> "falha na conexão".
+> Como o backend fica em outra origem, ele precisa liberar CORS para a origem
+> do frontend. No backend isso é a variável `CORS_ORIGIN` (lista separada por
+> vírgula); hoje ela aceita qualquer origem, e ao ser restringida precisa
+> incluir a origem publicada na Vercel — caso contrário o navegador bloqueia
+> as requisições e toda tela passa a informar falha de conexão.
 
 ## OpenSpec
 
