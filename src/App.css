@@ -56,11 +56,6 @@
   background: var(--error-bg);
 }
 
-.health-badge--misconfigured {
-  color: var(--error);
-  background: var(--error-bg);
-}
-
 .health-badge--loading {
   color: var(--pending);
   background: var(--pending-bg);
