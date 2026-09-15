@@ -1,0 +1,14 @@
+.not-found {
+  width: 100%;
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-4);
+}
+
+.not-found p {
+  margin: 0 0 var(--space-3);
+}
+
+.not-found p:last-child {
+  margin-bottom: 0;
+}

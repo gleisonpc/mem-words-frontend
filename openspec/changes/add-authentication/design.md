@@ -173,8 +173,9 @@ mesmo par de tokens. Um booleano só evitaria a segunda chamada, deixando a
 segunda requisição sem saber quando prosseguir — que é justamente o caso em que
 duas requisições expiram juntas.
 
-Limites deliberados: **uma** repetição por requisição (`_retried`), e nunca
-renovar para uma resposta de endpoint público. Sem esses limites, credenciais
+Limites deliberados: **uma** repetição por requisição — a repetição fica fora
+do `catch`, então uma segunda recusa sobe para quem chamou em vez de iniciar
+outra renovação — e nunca renovar para uma resposta de endpoint público. Sem esses limites, credenciais
 erradas no login — que também respondem `401` — dispararia uma renovação, e um
 refresh recusado entraria em recursão.
 
@@ -226,6 +227,24 @@ exibir a tela, exibir carregamento (enquanto a sessão está sendo determinada)
 ou redirecionar para `/entrar` levando a localização pretendida no `state` do
 histórico. O terceiro estado é o que impede o salto pela tela de entrada ao
 recarregar uma rota protegida.
+
+**Uma navegação tem um só dono.** Regra aprendida na verificação, depois de
+dois defeitos com a mesma forma: a tela de entrada navegava para o destino
+pretendido *e* a guarda de convidado navegava para a inicial, as duas
+disparadas pela mesma mudança de sessão; e, na saída, a moldura autenticada
+navegava para `/entrar` *e* a guarda redirecionava a partir da rota protegida.
+Nos dois casos as navegações corriam juntas e a última a rodar ganhava — o
+destino pretendido se perdia de forma intermitente, e a saída deixava a
+própria tela protegida marcada como "destino a voltar". Por isso quem decide
+para onde ir depois de uma mudança de sessão são **apenas as guardas**: as
+telas só chamam a operação de sessão, e a saída não navega. A guarda protegida
+também deixa de guardar destino quando a saída foi pedida pelo usuário — a
+entrada seguinte é voluntária e leva à tela inicial.
+
+A recomposição do destino inclui busca e fragmento, não só o caminho: quem
+abriu um endereço com parâmetros quer voltar àquele endereço. É também o que
+torna o retorno ao destino verificável hoje, com uma única rota protegida —
+`/?buscar=palavra` é distinguível da tela inicial.
 
 ### 7. O erro é um objeto único, com os campos já mapeados
 

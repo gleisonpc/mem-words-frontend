@@ -1,34 +1,20 @@
-import Gallery from './components/Gallery'
-import HealthStatus from './components/HealthStatus'
-import './App.css'
+import { BrowserRouter } from 'react-router'
+import { AuthProvider } from './auth/AuthProvider'
+import AppRoutes from './routes'
 
 /**
- * A galeria é alcançável por `?galeria` na URL.
+ * Raiz da aplicação.
  *
- * Decisão registrada em openspec: instalar um roteador só para servir uma
- * página de referência interna seria uma dependência e uma decisão de
- * arquitetura de navegação cedo demais. Quando o app tiver rotas de verdade, a
- * galeria migra para uma delas.
+ * O provedor de sessão fica **acima** do roteador: a guarda de rota precisa
+ * do estado da sessão para decidir, e a sessão precisa sobreviver à troca de
+ * telas sem ser determinada outra vez a cada navegação.
  */
-function querGaleria() {
-  return new URLSearchParams(window.location.search).has('galeria')
-}
-
-function App() {
-  if (querGaleria()) {
-    return <Gallery />
-  }
-
+export default function App() {
   return (
-    <main className="app">
-      <header className="app-header">
-        <h1>mem-words</h1>
-        <p>Aplicativo para ajudar a memorizar palavras</p>
-      </header>
-
-      <HealthStatus />
-    </main>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
-
-export default App

@@ -1,0 +1,20 @@
+.home__intro {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.home__data {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.home__data dt {
+  color: var(--color-text-muted);
+}
+
+.home__data dd {
+  margin: 0;
+}
