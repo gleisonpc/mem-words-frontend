@@ -9,62 +9,51 @@ Aplicativo para ajudar a memorizar palavras — frontend em React + Vite.
 
 ## Configuração
 
-O frontend precisa saber onde o backend está rodando. Isso é feito pela
-variável de ambiente `VITE_API_URL`.
+A URL do backend vem de `src/config.js`, que traz um padrão para cada ambiente:
 
-### Desenvolvimento
+| Ambiente | Padrão |
+| :--- | :--- |
+| Desenvolvimento (`npm run dev`) | `http://localhost:8080` |
+| Produção (`npm run build`) | `https://mem-words-backend.onrender.com` |
+
+Com isso o projeto funciona sem configuração extra, tanto localmente quanto no
+deploy.
+
+### Apontando para outro backend
+
+Defina `VITE_API_URL` — ela tem precedência sobre os padrões:
 
 ```bash
-cp .env.example .env
+cp .env.example .env    # desenvolvimento; o .env não é versionado
 ```
 
-Depois ajuste o valor em `.env` conforme o seu ambiente:
+Para o deploy, defina `VITE_API_URL` nas variáveis de ambiente do projeto na
+Vercel e publique novamente.
 
-```
-VITE_API_URL=http://localhost:8080
-```
+> **Por que o padrão fica no código, e não em um `.env.production`?**
+> O build da Vercel não aplica arquivos `.env` versionados no repositório —
+> verificado na prática: com `.env.production` presente e correto, o site
+> publicado reportava a variável como indefinida. Um padrão embutido no código
+> é embutido no bundle em tempo de build e não depende do comportamento do
+> host.
 
-O arquivo `.env` não é versionado. Caso a variável não esteja definida, o
-aplicativo usa `http://localhost:8080` como padrão — **apenas em
-desenvolvimento**.
-
-### Produção
-
-O arquivo `.env.production` é versionado e já aponta para o backend publicado
-no Render:
-
-```
-VITE_API_URL=https://mem-words-backend.onrender.com
-```
-
-O Vite carrega esse arquivo automaticamente em `npm run build`, então o deploy
-não precisa de configuração extra. Para apontar para outro backend sem alterar
-o repositório, basta definir `VITE_API_URL` no ambiente de build — no painel da
-Vercel, onde este frontend é publicado: variáveis do ambiente têm precedência
-sobre os arquivos `.env`.
+> Variáveis lidas pelo Vite precisam do prefixo `VITE_` e são embutidas no
+> bundle em tempo de build — não guarde segredos nelas. A URL do backend é
+> pública, por isso pode ficar no código.
 
 > O frontend é publicado na **Vercel** e o backend no **Render**. Como são
 > origens diferentes, o backend precisa liberar CORS para a origem do frontend.
 
-Em produção **não há fallback para `localhost`**: um site publicado apontando
-para `localhost` pediria ao navegador de quem acessa que falasse com a máquina
-dele, falhando como se o backend estivesse fora do ar. Se `VITE_API_URL` não
-estiver definida no momento do build, a tela mostra **"não configurado"** e diz
-exatamente o que falta, em vez de tentar uma conexão inútil.
-
 ### Diagnóstico
 
-A própria tela informa de onde veio a configuração deste build:
+A própria tela informa de onde veio a URL deste build:
 
 | O que aparece | O que significa |
 | :--- | :--- |
-| `VITE_API_URL: definida` + endpoint do Render | Build configurado corretamente. |
-| `VITE_API_URL: não definida neste build` | O build não recebeu a variável — verifique se está vendo um deploy antigo e, se não for o caso, defina `VITE_API_URL` nas variáveis de ambiente do projeto na Vercel e publique de novo. |
-| `falha na conexão` com endpoint correto | O build está certo; o problema é o backend (fora do ar ou sem CORS liberado). |
-
-> Variáveis lidas pelo Vite precisam do prefixo `VITE_` e são embutidas no
-> bundle em tempo de build — não guarde segredos nelas. A URL do backend é
-> pública, por isso pode ser versionada.
+| `Origem: VITE_API_URL` | O build recebeu a variável de ambiente. |
+| `Origem: padrão de produção` | Build de produção usando o padrão de `src/config.js`. |
+| `Origem: padrão de desenvolvimento` | Build de desenvolvimento apontando para `localhost`. |
+| `falha na conexão` com endpoint correto | A URL está certa; o problema é o backend (fora do ar ou sem CORS liberado). |
 
 ## Scripts
 

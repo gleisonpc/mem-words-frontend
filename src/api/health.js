@@ -6,22 +6,10 @@ const TIMEOUT_MS = 5000
 /**
  * Consulta o endpoint `/health` do backend.
  *
- * Resolve com `{ ok, detail, misconfigured }`, onde `ok` indica se a conexão
- * foi bem sucedida, `detail` traz a mensagem retornada pelo backend ou o
- * motivo da falha, e `misconfigured` distingue uma falha de configuração de
- * uma falha de conexão.
+ * Resolve com `{ ok, detail }`, onde `ok` indica se a conexão foi bem sucedida
+ * e `detail` traz a mensagem retornada pelo backend ou o motivo da falha.
  */
 export async function checkHealth() {
-  if (!API_URL) {
-    return {
-      ok: false,
-      misconfigured: true,
-      detail:
-        'VITE_API_URL não estava definida quando este build foi gerado. ' +
-        'Defina a variável no ambiente de build e publique novamente.',
-    }
-  }
-
   const url = `${API_URL}/health`
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
