@@ -1,0 +1,85 @@
+.ms-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast) var(--easing),
+    border-color var(--transition-fast) var(--easing),
+    color var(--transition-fast) var(--easing);
+}
+
+.ms-button--md {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-md);
+}
+
+.ms-button--sm {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.ms-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ms-button[aria-busy='true'] {
+  cursor: progress;
+}
+
+/* Primária — ação principal da tela. */
+.ms-button--primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.ms-button--primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+/* Secundária — ação alternativa, contorno em vez de preenchimento. */
+.ms-button--secondary {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.ms-button--secondary:hover:not(:disabled) {
+  background: var(--color-surface-muted);
+}
+
+/* Ghost — baixo peso visual, sem moldura em repouso. */
+.ms-button--ghost {
+  background: transparent;
+  color: var(--color-primary);
+}
+
+.ms-button--ghost:hover:not(:disabled) {
+  background: var(--color-surface-muted);
+}
+
+/* Perigo — preenchimento próprio mais o ícone de alerta do componente. */
+.ms-button--danger {
+  background: var(--color-danger);
+  color: var(--color-surface);
+}
+
+.ms-button--danger:hover:not(:disabled) {
+  background: var(--color-danger);
+  filter: brightness(0.92);
+}
+
+.ms-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.ms-button__icon {
+  flex: none;
+}
