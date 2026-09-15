@@ -25,7 +25,8 @@ VITE_API_URL=http://localhost:8080
 ```
 
 O arquivo `.env` não é versionado. Caso a variável não esteja definida, o
-aplicativo usa `http://localhost:8080` como padrão.
+aplicativo usa `http://localhost:8080` como padrão — **apenas em
+desenvolvimento**.
 
 ### Produção
 
@@ -44,6 +45,22 @@ sobre os arquivos `.env`.
 
 > O frontend é publicado na **Vercel** e o backend no **Render**. Como são
 > origens diferentes, o backend precisa liberar CORS para a origem do frontend.
+
+Em produção **não há fallback para `localhost`**: um site publicado apontando
+para `localhost` pediria ao navegador de quem acessa que falasse com a máquina
+dele, falhando como se o backend estivesse fora do ar. Se `VITE_API_URL` não
+estiver definida no momento do build, a tela mostra **"não configurado"** e diz
+exatamente o que falta, em vez de tentar uma conexão inútil.
+
+### Diagnóstico
+
+A própria tela informa de onde veio a configuração deste build:
+
+| O que aparece | O que significa |
+| :--- | :--- |
+| `VITE_API_URL: definida` + endpoint do Render | Build configurado corretamente. |
+| `VITE_API_URL: não definida neste build` | O build não recebeu a variável — verifique se está vendo um deploy antigo e, se não for o caso, defina `VITE_API_URL` nas variáveis de ambiente do projeto na Vercel e publique de novo. |
+| `falha na conexão` com endpoint correto | O build está certo; o problema é o backend (fora do ar ou sem CORS liberado). |
 
 > Variáveis lidas pelo Vite precisam do prefixo `VITE_` e são embutidas no
 > bundle em tempo de build — não guarde segredos nelas. A URL do backend é

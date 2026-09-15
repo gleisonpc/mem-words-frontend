@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { checkHealth } from '../api/health'
-import { API_URL, IS_API_URL_FROM_ENV } from '../config'
+import { API_URL, IS_API_URL_CONFIGURED } from '../config'
 
 const LABELS = {
   loading: 'Verificando conexão...',
   ok: 'ok',
   error: 'falha na conexão',
+  misconfigured: 'não configurado',
 }
 
 export default function HealthStatus() {
@@ -15,7 +16,11 @@ export default function HealthStatus() {
   // Consulta o backend e publica o resultado.
   const run = useCallback(async () => {
     const result = await checkHealth()
-    setStatus(result.ok ? 'ok' : 'error')
+    if (result.ok) {
+      setStatus('ok')
+    } else {
+      setStatus(result.misconfigured ? 'misconfigured' : 'error')
+    }
     setDetail(result.detail)
   }, [])
 
@@ -47,10 +52,10 @@ export default function HealthStatus() {
       <dl className="health-meta">
         <dt>Endpoint</dt>
         <dd>
-          <code>{API_URL}/health</code>
+          {API_URL ? <code>{API_URL}/health</code> : <em>indisponível</em>}
         </dd>
         <dt>VITE_API_URL</dt>
-        <dd>{IS_API_URL_FROM_ENV ? 'definida' : 'não definida (usando valor padrão)'}</dd>
+        <dd>{IS_API_URL_CONFIGURED ? 'definida' : 'não definida neste build'}</dd>
       </dl>
 
       <button type="button" onClick={verify} disabled={status === 'loading'}>
