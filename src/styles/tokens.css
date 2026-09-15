@@ -1,0 +1,196 @@
+/*
+ * Tokens de design do mem-words.
+ *
+ * Duas camadas, deliberadamente:
+ *
+ *   primitivos  -> valores brutos, nomeados pela cor (--indigo-600)
+ *   semânticos  -> nomeados pelo papel (--color-primary), apontam para primitivos
+ *
+ * Componentes referenciam APENAS os semânticos. O tema escuro reaponta os
+ * semânticos para outros primitivos; nenhum primitivo é redefinido. É isso que
+ * evita a armadilha de um token chamado "cinza claro" carregar, no tema
+ * escuro, um valor escuro.
+ *
+ * Os contrastes foram medidos pela fórmula da WCAG 2.1: todo par de texto
+ * alcança ao menos 4.5:1 e todo par não textual ao menos 3:1, nos dois temas.
+ */
+
+:root {
+  /* ---------- Primitivos: cor ---------- */
+
+  --gray-0: #ffffff;
+  --gray-25: #f7f8fa;
+  --gray-50: #f1f3f6;
+  --gray-100: #eceef1;
+  --gray-200: #dfe3e8;
+  --gray-400: #a0aab5;
+  --gray-500: #7b8590;
+  --gray-600: #5b6672;
+  --gray-700: #2f353b;
+  --gray-800: #23282d;
+  --gray-850: #1a1e22;
+  --gray-900: #16191d;
+  --gray-950: #101316;
+
+  --indigo-200: #c7d2fe;
+  --indigo-300: #a5b4fc;
+  --indigo-600: #4f46e5;
+  --indigo-700: #4338ca;
+
+  --green-50: #e6f6ec;
+  --green-400: #5fd08a;
+  --green-700: #0f7a3d;
+  --green-950: #10301e;
+
+  --amber-50: #fdf3d7;
+  --amber-300: #e3c169;
+  --amber-700: #8a6100;
+  --amber-950: #2e2611;
+
+  --red-50: #fdecea;
+  --red-300: #ff9d95;
+  --red-700: #b3241c;
+  --red-950: #3a1a18;
+
+  --blue-50: #e6f1fb;
+  --blue-300: #8fc4f5;
+  --blue-700: #0b5fa5;
+  --blue-950: #11263a;
+
+  /* ---------- Semânticos: tema claro ---------- */
+
+  --color-bg: var(--gray-25);
+  --color-surface: var(--gray-0);
+  --color-surface-muted: var(--gray-50);
+
+  --color-border: var(--gray-200);
+  --color-border-strong: var(--gray-500);
+
+  --color-text: var(--gray-900);
+  --color-text-muted: var(--gray-600);
+
+  --color-primary: var(--indigo-600);
+  --color-primary-hover: var(--indigo-700);
+  --color-on-primary: var(--gray-0);
+
+  --color-success: var(--green-700);
+  --color-success-bg: var(--green-50);
+  --color-warning: var(--amber-700);
+  --color-warning-bg: var(--amber-50);
+  --color-danger: var(--red-700);
+  --color-danger-bg: var(--red-50);
+  --color-info: var(--blue-700);
+  --color-info-bg: var(--blue-50);
+
+  /* ---------- Espaçamento (base 4px) ---------- */
+
+  --space-1: 0.25rem; /*  4px */
+  --space-2: 0.5rem; /*   8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /*    16px */
+  --space-6: 1.5rem; /*  24px */
+  --space-8: 2rem; /*    32px */
+  --space-12: 3rem; /*   48px */
+  --space-16: 4rem; /*   64px */
+
+  /* ---------- Tipografia ---------- */
+
+  --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --text-xs: 0.75rem; /*  12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-md: 1rem; /*     16px — corpo de texto */
+  --text-lg: 1.25rem; /*  20px */
+  --text-xl: 1.5rem; /*   24px */
+  --text-2xl: 2rem; /*    32px */
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+
+  /* ---------- Raio ---------- */
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* ---------- Sombra ---------- */
+
+  --shadow-sm: 0 1px 2px rgb(16 19 22 / 6%);
+  --shadow-md: 0 2px 8px rgb(16 19 22 / 8%);
+  --shadow-lg: 0 8px 24px rgb(16 19 22 / 12%);
+
+  /* ---------- Transição ---------- */
+
+  --transition-fast: 120ms; /* retorno de interação */
+  --transition-slow: 240ms; /* mudança de layout */
+  --easing: cubic-bezier(0.2, 0, 0.2, 1);
+
+  color-scheme: light dark;
+}
+
+/* ---------- Semânticos: tema escuro ----------
+ *
+ * Exatamente os mesmos nomes do tema claro, apontando para outros primitivos.
+ * Nenhum nome existe aqui sem existir acima, e vice-versa.
+ */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: var(--gray-950);
+    --color-surface: var(--gray-850);
+    --color-surface-muted: var(--gray-800);
+
+    --color-border: var(--gray-700);
+    --color-border-strong: var(--gray-500);
+
+    --color-text: var(--gray-100);
+    --color-text-muted: var(--gray-400);
+
+    --color-primary: var(--indigo-300);
+    --color-primary-hover: var(--indigo-200);
+    --color-on-primary: var(--gray-950);
+
+    --color-success: var(--green-400);
+    --color-success-bg: var(--green-950);
+    --color-warning: var(--amber-300);
+    --color-warning-bg: var(--amber-950);
+    --color-danger: var(--red-300);
+    --color-danger-bg: var(--red-950);
+    --color-info: var(--blue-300);
+    --color-info-bg: var(--blue-950);
+
+    /* Sombras precisam de mais opacidade para aparecer sobre fundo escuro. */
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+    --shadow-md: 0 2px 8px rgb(0 0 0 / 48%);
+    --shadow-lg: 0 8px 24px rgb(0 0 0 / 56%);
+  }
+}
+
+/* ---------- Movimento reduzido ----------
+ *
+ * Zera as durações em vez de remover as regras de transição: os componentes
+ * continuam escritos do mesmo jeito, e a mudança de estado passa a ser
+ * instantânea em vez de animada. Nenhuma informação depende da animação.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+    --transition-slow: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

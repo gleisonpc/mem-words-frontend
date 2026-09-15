@@ -1,0 +1,39 @@
+.ms-alert {
+  padding: var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.ms-alert__title {
+  margin: 0 0 var(--space-1);
+  font-weight: var(--weight-semibold);
+}
+
+.ms-alert__body {
+  overflow-wrap: anywhere;
+}
+
+.ms-alert--success {
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.ms-alert--warning {
+  border-color: var(--color-warning);
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.ms-alert--danger {
+  border-color: var(--color-danger);
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.ms-alert--info {
+  border-color: var(--color-info);
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}

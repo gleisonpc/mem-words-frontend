@@ -1,11 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
 import { checkHealth } from '../api/health'
 import { API_URL, API_URL_SOURCE } from '../config'
+import { Badge, Button, Card } from './ui'
+import './HealthStatus.css'
 
+// Textos preservados do comportamento anterior à refatoração: esta mudança é
+// de implementação, não de conteúdo.
 const LABELS = {
   loading: 'Verificando conexão...',
   ok: 'ok',
   error: 'falha na conexão',
+}
+
+const VARIANTS = {
+  loading: 'neutral',
+  ok: 'success',
+  error: 'danger',
 }
 
 export default function HealthStatus() {
@@ -33,29 +43,28 @@ export default function HealthStatus() {
     run()
   }, [run])
 
+  const carregando = status === 'loading'
+
   return (
-    <section className="health" aria-live="polite">
-      <h2>Status do backend</h2>
+    <Card title="Status do backend">
+      <div className="health" aria-live="polite">
+        <Badge variant={VARIANTS[status]}>{LABELS[status]}</Badge>
 
-      <p className={`health-badge health-badge--${status}`}>
-        <span className="health-dot" aria-hidden="true" />
-        {LABELS[status]}
-      </p>
+        {detail && <p className="health__detail">{detail}</p>}
 
-      {detail && <p className="health-detail">{detail}</p>}
+        <dl className="health__meta">
+          <dt>Endpoint</dt>
+          <dd>
+            <code>{API_URL}/health</code>
+          </dd>
+          <dt>Origem</dt>
+          <dd>{API_URL_SOURCE}</dd>
+        </dl>
 
-      <dl className="health-meta">
-        <dt>Endpoint</dt>
-        <dd>
-          <code>{API_URL}/health</code>
-        </dd>
-        <dt>Origem</dt>
-        <dd>{API_URL_SOURCE}</dd>
-      </dl>
-
-      <button type="button" onClick={verify} disabled={status === 'loading'}>
-        {status === 'loading' ? 'Verificando...' : 'Verificar novamente'}
-      </button>
-    </section>
+        <Button variant="secondary" onClick={verify} loading={carregando}>
+          {carregando ? 'Verificando...' : 'Verificar novamente'}
+        </Button>
+      </div>
+    </Card>
   )
 }

@@ -1,44 +1,59 @@
-:root {
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --text: #1c2024;
-  --muted: #5f6b76;
-  --border: #e2e6ea;
-  --ok: #157f45;
-  --ok-bg: #e7f6ed;
-  --error: #b3261e;
-  --error-bg: #fdeceb;
-  --pending: #7a6100;
-  --pending-bg: #fdf4d9;
+@import './styles/tokens.css';
 
-  color-scheme: light dark;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14171a;
-    --surface: #1e2225;
-    --text: #edeff1;
-    --muted: #9aa5b0;
-    --border: #2e343a;
-    --ok: #6fd79b;
-    --ok-bg: #16311f;
-    --error: #ff9a92;
-    --error-bg: #3a1a18;
-    --pending: #e8cd72;
-    --pending-bg: #322a12;
-  }
-}
-
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
-  color: var(--text);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: var(--leading-tight);
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/*
+ * Foco visível compartilhado.
+ *
+ * `:focus-visible` em vez de `:focus` para que o anel apareça na navegação por
+ * teclado e não ao clicar com o mouse. O anel nunca é removido sem substituto:
+ * sem ele a interface fica inoperável para quem navega por teclado.
+ */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/*
+ * Esconde visualmente sem remover da árvore de acessibilidade. Usado para
+ * rótulos que leitores de tela precisam ler mas que seriam redundantes na tela.
+ */
+.ms-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }

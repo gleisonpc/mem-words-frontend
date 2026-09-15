@@ -1,0 +1,111 @@
+.gal {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-4);
+}
+
+.gal-header h1 {
+  font-size: var(--text-2xl);
+}
+
+.gal-header p {
+  max-width: 44rem;
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+}
+
+.gal-section {
+  margin-top: var(--space-12);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.gal-section__title {
+  font-size: var(--text-lg);
+}
+
+.gal-section__description {
+  max-width: 44rem;
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.gal-section__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.gal-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.gal-row--center {
+  align-items: center;
+}
+
+.gal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-6);
+}
+
+.gal-text {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.gal-output {
+  align-self: center;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.gal-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gal-swatch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.gal-swatch__chip {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.gal-swatch__text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.gal-swatch__text code {
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.gal-swatch__role {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}

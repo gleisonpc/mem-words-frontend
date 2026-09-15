@@ -57,7 +57,7 @@ Valores propostos, com contraste já medido (ver "Verificação de contraste"):
 | `surface` | `#ffffff` | `#1a1e22` |
 | `surface-muted` | `#f1f3f6` | `#23282d` |
 | `border` (divisória sutil) | `#dfe3e8` | `#2f353b` |
-| `border-strong` (campo, foco) | `#767e89` | `#7b8590` |
+| `border-strong` (campo, foco) | `#7b8590` | `#7b8590` |
 | `text` | `#16191d` | `#eceef1` |
 | `text-muted` | `#5b6672` | `#a0aab5` |
 | `primary` | `#4f46e5` | `#a5b4fc` |
@@ -83,6 +83,11 @@ Os pares de cor foram medidos pela fórmula de contraste da WCAG 2.1, não
 estimados. A medição reprovou a primeira escolha de `border-strong`
 (`#b9c2cc` no claro, `1.80:1` contra a superfície, bem abaixo do mínimo de
 3:1); os valores da tabela acima são os corrigidos.
+
+Na implementação, `border-strong` acabou consolidado em um único valor
+(`#7b8590`) para os dois temas: ele passa nos dois (`3.75:1` no claro,
+`4.47:1` no escuro), e uma cor a menos na paleta é uma cor a menos para
+manter em sincronia.
 
 Pares verificados: texto sobre fundo e sobre superfície em cada tema, texto
 suave, texto sobre botão primário, cada cor de estado sobre seu fundo de
