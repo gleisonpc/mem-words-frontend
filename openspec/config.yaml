@@ -1,5 +1,26 @@
 schema: spec-driven
 
+context: |
+  mem-words — aplicativo para ajudar a memorizar palavras.
+
+  Este repositório é o frontend.
+
+  Stack: React 19, Vite 8, JavaScript (JSX, sem TypeScript), oxlint.
+  Estilos: CSS puro com custom properties (variáveis CSS). Sem Tailwind,
+  CSS-in-JS ou biblioteca de componentes.
+
+  Estrutura: `src/components/` para componentes, `src/api/` para chamadas
+  ao backend, `src/config.js` para configuração de ambiente.
+
+  O backend é um repositório separado (mem-words-backend), publicado no
+  Render. O frontend é publicado na Vercel.
+
+  Convenções:
+  - Textos de interface em português do Brasil.
+  - Comentários e documentação em português.
+  - Commits no formato conventional commits.
+  - Suporte a tema claro e escuro via `prefers-color-scheme`.
+
 # Project context (optional)
 # This is shown to AI when creating artifacts.
 # Add your tech stack, conventions, style guides, domain knowledge, etc.
