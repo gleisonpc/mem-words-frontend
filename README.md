@@ -38,9 +38,12 @@ VITE_API_URL=https://mem-words-backend.onrender.com
 
 O Vite carrega esse arquivo automaticamente em `npm run build`, então o deploy
 não precisa de configuração extra. Para apontar para outro backend sem alterar
-o repositório, basta definir `VITE_API_URL` no ambiente de build (por exemplo,
-no painel do Render): variáveis do ambiente têm precedência sobre os arquivos
-`.env`.
+o repositório, basta definir `VITE_API_URL` no ambiente de build — no painel da
+Vercel, onde este frontend é publicado: variáveis do ambiente têm precedência
+sobre os arquivos `.env`.
+
+> O frontend é publicado na **Vercel** e o backend no **Render**. Como são
+> origens diferentes, o backend precisa liberar CORS para a origem do frontend.
 
 > Variáveis lidas pelo Vite precisam do prefixo `VITE_` e são embutidas no
 > bundle em tempo de build — não guarde segredos nelas. A URL do backend é
