@@ -1,5 +1,5 @@
 /**
- * Depósito dos tokens da sessão.
+ * Depósito da sessão.
  *
  * É a única parte do frontend que conhece o `localStorage`. Existe para
  * quebrar o ciclo que apareceria se o cliente HTTP (que precisa do token e da
@@ -8,6 +8,18 @@
  *
  * Nenhuma tela importa este arquivo — para as telas, a fonte de verdade sobre
  * a sessão é o contexto.
+ *
+ * O token de renovação nunca passa por aqui — nem por nenhum outro lugar do
+ * frontend. O backend o entrega e o exige por cookie `HttpOnly`: o navegador
+ * o guarda e o envia sozinho, e nenhum JavaScript, legítimo ou injetado,
+ * consegue lê-lo. O token de acesso, de vida curta, existe só na variável em
+ * memória abaixo — nunca é gravado no `localStorage`, para não deixar pela
+ * metade o problema que essa mudança existe para resolver.
+ *
+ * O que persiste é só uma dica não sensível — "uma sessão foi iniciada antes"
+ * — e o usuário para exibição. Ela não prova sessão válida; só evita que
+ * quem nunca autenticou pague, na abertura da aplicação, uma tentativa de
+ * renovação fadada a falhar.
  */
 
 /** Chave única; o prefixo evita colisão com outra aplicação na mesma origem. */
@@ -18,10 +30,19 @@ export const LOGOUT = 'logout'
 export const SESSION_EXPIRED = 'session-expired'
 
 /**
- * Estado em memória — a fonte usada em tempo de execução. O `localStorage` é
- * só o espelho que sobrevive à recarga.
+ * Token de acesso em memória — nunca persistido. Depois de uma recarga, ele
+ * sempre volta `null`, mesmo com uma sessão anterior guardada (`hint`
+ * abaixo): é essa lacuna que aciona a renovação pelo cookie na abertura.
  */
-let session = null
+let accessToken = null
+
+/**
+ * Dica de sessão: `null` quando não há sessão anterior, ou `{ user }` quando
+ * há. É o único dado que sobrevive a uma recarga — restaurado do
+ * `localStorage` na carga do módulo, e a partir daí mantido em memória e
+ * espelhado a cada mudança.
+ */
+let hint = restore()
 
 const listeners = new Set()
 
@@ -42,7 +63,7 @@ function withStorage(operation, fallback = null) {
   }
 }
 
-/** Aceita apenas o que tem os dois tokens: o resto não serve como sessão. */
+/** Aceita apenas o formato da dica atual: `hasSession` mais o usuário. */
 function parse(raw) {
   if (!raw) {
     return null
@@ -50,16 +71,7 @@ function parse(raw) {
 
   try {
     const parsed = JSON.parse(raw)
-
-    if (typeof parsed?.accessToken !== 'string' || typeof parsed?.refreshToken !== 'string') {
-      return null
-    }
-
-    return {
-      accessToken: parsed.accessToken,
-      refreshToken: parsed.refreshToken,
-      user: parsed.user ?? null,
-    }
+    return parsed?.hasSession === true ? { user: parsed.user ?? null } : null
   } catch {
     return null
   }
@@ -72,15 +84,13 @@ function restore() {
 
 function persist() {
   withStorage((storage) => {
-    if (session === null) {
+    if (hint === null) {
       storage.removeItem(STORAGE_KEY)
     } else {
-      storage.setItem(STORAGE_KEY, JSON.stringify(session))
+      storage.setItem(STORAGE_KEY, JSON.stringify({ hasSession: true, user: hint.user }))
     }
   })
 }
-
-session = restore()
 
 /**
  * Registra interesse no encerramento da sessão e devolve a função que
@@ -96,41 +106,43 @@ export function onSessionEnded(listener) {
 }
 
 export function getAccessToken() {
-  return session?.accessToken ?? null
-}
-
-export function getRefreshToken() {
-  return session?.refreshToken ?? null
+  return accessToken
 }
 
 /** O usuário guardado é dica de exibição, nunca prova de sessão válida. */
 export function getStoredUser() {
-  return session?.user ?? null
+  return hint?.user ?? null
 }
 
-export function hasTokens() {
-  return session !== null
+/**
+ * Há uma sessão anterior a tentar restaurar? Não prova nada por si — só diz
+ * se vale tentar renovar pelo cookie antes de assumir "sem sessão".
+ */
+export function hasSessionHint() {
+  return hint !== null
 }
 
 /** Grava a sessão inteira — o caso da entrada e do cadastro. */
-export function setSession({ accessToken, refreshToken, user = null }) {
-  session = { accessToken, refreshToken, user }
+export function setSession({ accessToken: token, user = null }) {
+  accessToken = token
+  hint = { user }
   persist()
 }
 
 /**
- * Substitui o par de tokens preservando o usuário: é o que a renovação
- * devolve, já que `/auth/refresh` não repete os dados do usuário.
+ * Substitui o token de acesso preservando o usuário guardado: é o que a
+ * renovação devolve.
  */
-export function setTokens({ accessToken, refreshToken }) {
-  session = { accessToken, refreshToken, user: session?.user ?? null }
+export function setTokens({ accessToken: token }) {
+  accessToken = token
+  hint = { user: hint?.user ?? null }
   persist()
 }
 
-/** Atualiza o usuário guardado sem tocar nos tokens. */
+/** Atualiza o usuário guardado sem tocar no token. */
 export function setUser(user) {
-  if (session !== null) {
-    session = { ...session, user }
+  if (hint !== null) {
+    hint = { user }
     persist()
   }
 }
@@ -140,11 +152,12 @@ export function setUser(user) {
  * limpar o que já está limpo não notifica ninguém.
  */
 export function clear(reason = SESSION_EXPIRED) {
-  if (session === null) {
+  if (hint === null && accessToken === null) {
     return
   }
 
-  session = null
+  accessToken = null
+  hint = null
   persist()
 
   for (const listener of listeners) {

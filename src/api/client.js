@@ -79,6 +79,11 @@ async function attempt(path, { method, body, auth, timeoutMs }) {
       method,
       headers,
       signal: controller.signal,
+      // O cookie do token de renovação viaja entre origens diferentes
+      // (frontend e backend em domínios distintos); sem `include`, o
+      // navegador não o envia nem aceita gravá-lo. Incondicional porque uma
+      // rota que não usa cookie algum simplesmente ignora a opção.
+      credentials: 'include',
       ...(body !== undefined && { body: JSON.stringify(body) }),
     })
 
@@ -123,31 +128,29 @@ function sessionExpired(cause) {
  * O refresh token do backend é de uso único, e reapresentar um token já gasto
  * é lido como vazamento: ele revoga todas as sessões do usuário. Guardar a
  * promessa faz com que quem chegar durante uma renovação aguarde a mesma e
- * receba o mesmo par de tokens. Um sinalizador booleano evitaria a segunda
+ * receba o mesmo token novo. Um sinalizador booleano evitaria a segunda
  * chamada, mas deixaria a segunda requisição sem saber quando prosseguir —
  * que é justamente o caso de duas requisições expirando juntas.
  */
 let renewal = null
 
+/**
+ * Não há token de renovação a ler aqui — ele é um cookie que o navegador já
+ * anexa sozinho (`credentials: 'include'`, acima). Chamar `/auth/refresh`
+ * sem cookie válido responde `401` do mesmo jeito que um token recusado
+ * responderia, e cai no mesmo tratamento abaixo.
+ */
 async function performRenewal() {
-  const refreshToken = tokenStore.getRefreshToken()
-
-  if (refreshToken === null) {
-    tokenStore.clear()
-    throw sessionExpired()
-  }
-
   let tokens
 
   try {
     tokens = await attempt('/auth/refresh', {
       method: 'POST',
-      body: { refreshToken },
       auth: false,
       timeoutMs: DEFAULT_TIMEOUT_MS,
     })
   } catch (error) {
-    // Backend inacessível não é sessão inválida: apagar os tokens aqui
+    // Backend inacessível não é sessão inválida: apagar o token aqui
     // deslogaria a pessoa por causa de uma queda de rede momentânea.
     if (error instanceof ApiError && error.isConnectionFailure) {
       throw error
@@ -162,7 +165,7 @@ async function performRenewal() {
 }
 
 /**
- * Troca o par de tokens por um novo, garantindo uma única chamada em curso.
+ * Troca o token de acesso por um novo, garantindo uma única chamada em curso.
  *
  * Exportada porque o módulo de autenticação a reaproveita — há uma só
  * implementação de renovação na aplicação.

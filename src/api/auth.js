@@ -22,20 +22,21 @@ export async function register({ name, email, password }) {
   return user
 }
 
-/** Autentica por credenciais e devolve o usuário com o par de tokens. */
+/** Autentica por credenciais e devolve o usuário com o token de acesso. */
 export function login({ email, password }) {
   return request('/auth/login', { method: 'POST', body: { email, password } })
 }
 
-/** Troca o par de tokens. Reaproveita a renovação de disparo único do cliente. */
+/** Troca o token de acesso. Reaproveita a renovação de disparo único do cliente. */
 export function refresh() {
   return renewTokens()
 }
 
 /**
- * Revoga o token de renovação. É idempotente no backend, então reenviar um
- * token já revogado continua respondendo sucesso.
+ * Revoga o token de renovação apresentado pelo cookie — nenhum argumento
+ * aqui, porque o frontend não manipula esse token. É idempotente no
+ * backend, então chamar sem cookie algum continua respondendo sucesso.
  */
-export function logout(refreshToken) {
-  return request('/auth/logout', { method: 'POST', body: { refreshToken } })
+export function logout() {
+  return request('/auth/logout', { method: 'POST' })
 }
