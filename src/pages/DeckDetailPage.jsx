@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { deleteDeck, getDeck, updateDeck } from '../api/decks'
 import { createCard, deleteCard, listCards, updateCard } from '../api/cards'
+import { getReviewQueue } from '../api/reviews'
 import ApiError from '../api/ApiError'
 import useAuthForm from '../auth/useAuthForm'
 import { collect } from '../auth/validation'
@@ -124,8 +125,8 @@ function DeckEditForm({ deck, onSaved, onCancel }) {
   )
 }
 
-/** Cabeçalho do baralho: exibição, edição e exclusão. */
-function DeckHeader({ deck, onUpdated, onDeleted }) {
+/** Cabeçalho do baralho: exibição, edição, exclusão e início de revisão. */
+function DeckHeader({ deck, reviewCount, onUpdated, onDeleted }) {
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState(null)
@@ -185,6 +186,20 @@ function DeckHeader({ deck, onUpdated, onDeleted }) {
         <dt>Cards</dt>
         <dd>{deck.cardCount}</dd>
       </dl>
+
+      <div className="deck-detail__review-cta">
+        {reviewCount !== null && (
+          <span className="deck-detail__review-count">
+            {reviewCount} {reviewCount === 1 ? 'pronto' : 'prontos'} para revisão
+          </span>
+        )}
+        <Link
+          to={`/baralhos/${deck.id}/revisar`}
+          className="ms-button ms-button--primary ms-button--md"
+        >
+          Revisar
+        </Link>
+      </div>
     </Card>
   )
 }
@@ -445,6 +460,10 @@ export default function DeckDetailPage() {
   const [cards, setCards] = useState([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
+
+  // `null` enquanto não sabemos — falha ao buscar não impede o resto da
+  // tela, só some com a contagem (o botão de revisar continua alcançável).
+  const [reviewCount, setReviewCount] = useState(null)
   // Muda a cada card criado, para remontar `CreateCardForm` com campos
   // vazios — `useAuthForm` não limpa os valores depois de um envio
   // bem-sucedido, porque nas telas de autenticação o sucesso navega para
@@ -482,6 +501,14 @@ export default function DeckDetailPage() {
     }
   }, [id, page])
 
+  const loadReviewCount = useCallback(async () => {
+    try {
+      setReviewCount((await getReviewQueue(id)).length)
+    } catch {
+      setReviewCount(null)
+    }
+  }, [id])
+
   useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect
     loadDeck()
@@ -491,8 +518,10 @@ export default function DeckDetailPage() {
     if (deckStatus === 'ok') {
       // oxlint-disable-next-line react/set-state-in-effect
       loadCards()
+      // oxlint-disable-next-line react/set-state-in-effect
+      loadReviewCount()
     }
-  }, [deckStatus, loadCards])
+  }, [deckStatus, loadCards, loadReviewCount])
 
   if (deckStatus === 'loading') {
     return (
@@ -547,6 +576,7 @@ export default function DeckDetailPage() {
     <div className="deck-detail">
       <DeckHeader
         deck={deck}
+        reviewCount={reviewCount}
         onUpdated={setDeck}
         onDeleted={() => navigate('/', { replace: true })}
       />
