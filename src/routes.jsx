@@ -3,6 +3,7 @@ import GuestOnly from './auth/GuestOnly'
 import RequireAuth from './auth/RequireAuth'
 import AuthenticatedLayout from './components/AuthenticatedLayout'
 import Gallery from './components/Gallery'
+import DeckDetailPage from './pages/DeckDetailPage'
 import DiagnosticsPage from './pages/DiagnosticsPage'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
@@ -28,6 +29,7 @@ export default function AppRoutes() {
       <Route element={<RequireAuth />}>
         <Route element={<AuthenticatedLayout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/baralhos/:id" element={<DeckDetailPage />} />
         </Route>
       </Route>
 

@@ -1,0 +1,100 @@
+.deck-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Compartilhadas com `HomePage.css`: mesmo padrão visual de formulário de
+   baralho/card nas duas telas — duplicado de propósito em vez de um
+   arquivo de estilos comum só para isto, para não depender da ordem de
+   importação entre páginas irmãs. */
+.deck-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.deck-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.deck-detail__loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-6) 0;
+}
+
+.deck-detail__empty {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.deck-detail__meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.deck-detail__meta dt {
+  color: var(--color-text-muted);
+}
+
+.deck-detail__meta dd {
+  margin: 0;
+}
+
+.deck-detail__cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.deck-detail__card {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.deck-detail__card-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.deck-detail__card-word {
+  margin: 0;
+  font-weight: var(--weight-medium);
+}
+
+.deck-detail__card-translation {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.deck-detail__card-actions {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+}
+
+.deck-detail__card-detail {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.deck-detail__card-note {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  font-size: var(--text-sm);
+}

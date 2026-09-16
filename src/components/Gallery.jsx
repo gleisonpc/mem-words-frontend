@@ -1,5 +1,15 @@
 import { useState } from 'react'
-import { Alert, Badge, Button, Card, Input, ProgressBar, Spinner } from './ui'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  ConfirmDeleteButton,
+  Input,
+  Pagination,
+  ProgressBar,
+  Spinner,
+} from './ui'
 import './Gallery.css'
 
 /** Tokens semânticos exibidos na paleta, na ordem em que fazem sentido lidos. */
@@ -42,6 +52,7 @@ function Section({ id, title, description, children }) {
 export default function Gallery() {
   const [cliques, setCliques] = useState(0)
   const [progresso, setProgresso] = useState(40)
+  const [pagina, setPagina] = useState(1)
 
   return (
     <main className="gal">
@@ -208,6 +219,22 @@ export default function Gallery() {
         </div>
         <ProgressBar label="Valor abaixo do mínimo (−50)" value={-50} showValue />
         <ProgressBar label="Valor acima do máximo (150)" value={150} showValue />
+      </Section>
+
+      <Section
+        id="paginacao"
+        title="Paginação"
+        description="Só anterior/próxima — os botões desabilitam nas pontas."
+      >
+        <Pagination page={pagina} pageSize={10} total={42} onChange={setPagina} />
+      </Section>
+
+      <Section
+        id="excluir"
+        title="Confirmação de exclusão"
+        description="Sem modal: o primeiro clique troca o botão por confirmar/cancelar."
+      >
+        <ConfirmDeleteButton onConfirm={() => {}}>Excluir baralho</ConfirmDeleteButton>
       </Section>
     </main>
   )
