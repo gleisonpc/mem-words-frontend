@@ -1,0 +1,12 @@
+.ms-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.ms-pagination__status {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
