@@ -13,9 +13,9 @@ import * as tokenStore from './tokenStore'
  * daqui, pelo `useAuth`.
  */
 
-/** Estado inicial: só é "determinando" quando há algo guardado para conferir. */
+/** Estado inicial: só é "determinando" quando há uma sessão anterior a conferir. */
 function initialState() {
-  return tokenStore.hasTokens()
+  return tokenStore.hasSessionHint()
     ? // O usuário guardado entra como dica de exibição, para a tela não
       // piscar sem nome enquanto a confirmação corre. Ele não autentica nada:
       // o status ainda é "determinando".
@@ -49,11 +49,15 @@ export function AuthProvider({ children }) {
     [],
   )
 
-  // Restauração da sessão guardada. Tokens guardados não provam nada — podem
-  // estar expirados, revogados ou pertencer a uma conta já excluída — então a
-  // confirmação vem do backend.
+  // Restauração da sessão guardada. A dica não prova nada — o cookie do
+  // token de renovação pode estar expirado, revogado ou pertencer a uma
+  // conta já excluída — então a confirmação vem do backend. Sem token de
+  // acesso em memória (a recarga sempre zera), a própria chamada a
+  // `getMe()` sai sem `Authorization`, o backend responde `401`, e o
+  // tratamento de `401` de `client.js` já dispara a renovação pelo cookie
+  // e repete — não é preciso chamar `authApi.refresh()` explicitamente aqui.
   useEffect(() => {
-    if (!tokenStore.hasTokens()) {
+    if (!tokenStore.hasSessionHint()) {
       return undefined
     }
 
@@ -74,9 +78,9 @@ export function AuthProvider({ children }) {
           return
         }
 
-        // Backend fora do ar não é sessão inválida: apagar os tokens aqui
-        // deslogaria alguém por causa de uma queda momentânea. Guardamos os
-        // tokens e dizemos que foi conexão, não credencial.
+        // Backend fora do ar não é sessão inválida: apagar a dica de sessão
+        // aqui deslogaria alguém por causa de uma queda momentânea.
+        // Guardamos a dica e dizemos que foi conexão, não credencial.
         if (error instanceof ApiError && error.isConnectionFailure) {
           setState({ status: ANONYMOUS, user: null, signedOut: false })
           setNotice({
@@ -101,9 +105,9 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signIn = useCallback(async ({ email, password }) => {
-    const { user, accessToken, refreshToken } = await authApi.login({ email, password })
+    const { user, accessToken } = await authApi.login({ email, password })
 
-    tokenStore.setSession({ accessToken, refreshToken, user })
+    tokenStore.setSession({ accessToken, user })
     setState({ status: AUTHENTICATED, user, signedOut: false })
     setNotice(null)
 
@@ -130,19 +134,17 @@ export function AuthProvider({ children }) {
   )
 
   const signOut = useCallback(() => {
-    const refreshToken = tokenStore.getRefreshToken()
-
     // O estado local cai primeiro, e o depósito avisa o ouvinte: sair é uma
     // intenção do usuário, e um backend inacessível não pode mantê-lo preso
     // numa sessão que ele pediu para encerrar.
     tokenStore.clear(tokenStore.LOGOUT)
 
-    if (refreshToken !== null) {
-      // A revogação segue sem ser aguardada, e a falha é engolida de
-      // propósito: localmente a sessão já terminou, e o token expira no
-      // backend de todo modo.
-      authApi.logout(refreshToken).catch(() => {})
-    }
+    // A revogação segue sem ser aguardada, e a falha é engolida de
+    // propósito: localmente a sessão já terminou, e o token expira no
+    // backend de todo modo. Sem argumento — o cookie do token de renovação
+    // viaja sozinho; se não houver cookie algum, o backend responde sucesso
+    // do mesmo jeito.
+    authApi.logout().catch(() => {})
   }, [])
 
   const dismissNotice = useCallback(() => setNotice(null), [])

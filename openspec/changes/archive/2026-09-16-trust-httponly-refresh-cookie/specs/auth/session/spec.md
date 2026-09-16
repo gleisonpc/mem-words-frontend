@@ -1,51 +1,4 @@
-# auth/session Specification
-
-## Purpose
-
-Define o ciclo de vida da sessão de quem usa o mem-words no navegador — como
-ela é criada, onde fica guardada, como é restaurada ao reabrir a aplicação,
-como se renova sozinha e como termina — para que as telas saibam, a qualquer
-momento e por uma única fonte, quem está autenticado.
-
-## Requirements
-
-### Requirement: Fonte única de verdade sobre a sessão
-
-A aplicação SHALL expor o estado da sessão por uma única fonte, acessível a
-qualquer tela, contendo: se a sessão ainda está sendo determinada, o usuário
-autenticado quando há sessão, e a ausência de sessão quando não há.
-
-Nenhuma tela SHALL ler os tokens guardados diretamente para decidir se há
-sessão.
-
-#### Scenario: Estado indeterminado no início
-- **WHEN** a aplicação é aberta e ainda não se sabe se há sessão válida
-- **THEN** o estado é "determinando"
-- **AND** nenhuma tela conclui que o usuário está autenticado ou anônimo
-
-#### Scenario: Estado consultado por qualquer tela
-- **WHEN** uma tela precisa saber quem está autenticado
-- **THEN** ela obtém o usuário pela fonte única de sessão
-
-### Requirement: Cadastro de conta
-
-A sessão SHALL oferecer a operação de cadastro a partir de nome, e-mail e
-senha.
-
-Cadastro bem-sucedido SHALL deixar o usuário autenticado sem exigir que ele
-digite as credenciais outra vez.
-
-Cadastro recusado SHALL NOT alterar o estado da sessão.
-
-#### Scenario: Cadastro bem-sucedido
-- **WHEN** o cadastro é aceito pelo backend
-- **THEN** a sessão passa a existir e o usuário fica autenticado
-- **AND** as credenciais não são solicitadas novamente
-
-#### Scenario: E-mail já cadastrado
-- **WHEN** o backend recusa o cadastro porque o e-mail já pertence a uma conta
-- **THEN** a falha é reportada a quem chamou
-- **AND** a sessão permanece inexistente
+## MODIFIED Requirements
 
 ### Requirement: Entrada por credenciais
 
@@ -56,7 +9,8 @@ guardar o token de acesso recebido. O token de renovação SHALL NOT ser
 manipulado pelo frontend — ele chega e é guardado pelo navegador, via
 cookie, sem que o JavaScript da aplicação o veja.
 
-Entrada recusada SHALL NOT alterar o estado da sessão nem guardar token algum.
+Entrada recusada SHALL NOT alterar o estado da sessão nem guardar token
+algum.
 
 #### Scenario: Credenciais corretas
 - **WHEN** o backend aceita as credenciais
@@ -147,8 +101,8 @@ novo. O backend rotaciona o token de renovação a cada uso, mas o frontend
 não manipula esse valor — a rotação acontece inteiramente por troca de
 cookie.
 
-A requisição repetida SHALL ser transparente para a tela: ela observa apenas o
-resultado final.
+A requisição repetida SHALL ser transparente para a tela: ela observa apenas
+o resultado final.
 
 #### Scenario: Token de acesso expirado
 - **WHEN** uma requisição autenticada é recusada por token expirado e a
@@ -166,28 +120,6 @@ resultado final.
 - **WHEN** a requisição repetida também é recusada por autenticação
 - **THEN** nenhuma nova renovação é tentada para aquela requisição
 - **AND** a sessão é encerrada localmente
-
-### Requirement: Renovação de disparo único
-
-O token de renovação do backend é de uso único, e reapresentar um token já
-gasto é tratado como vazamento: o backend revoga todas as sessões ativas do
-usuário.
-
-Por isso, renovações concorrentes disparadas pela mesma aba SHALL convergir
-para uma única chamada ao backend: requisições que encontrem uma renovação em
-curso SHALL aguardar seu resultado em vez de iniciar outra.
-
-#### Scenario: Duas requisições expiram juntas
-- **WHEN** duas requisições autenticadas são recusadas por token expirado
-  quase ao mesmo tempo
-- **THEN** apenas uma renovação é enviada ao backend
-- **AND** as duas requisições são repetidas com o mesmo par de tokens novo
-
-#### Scenario: Montagem dupla em desenvolvimento
-- **WHEN** a aplicação monta o provedor de sessão duas vezes em sequência,
-  como ocorre no modo estrito de desenvolvimento
-- **THEN** no máximo uma renovação é enviada ao backend
-- **AND** a sessão não é derrubada por detecção de reuso
 
 ### Requirement: Encerramento de sessão
 
@@ -209,16 +141,3 @@ alguém preso em uma sessão que ele pediu para encerrar.
 - **WHEN** o usuário sai e a chamada ao backend falha
 - **THEN** o estado local passa a "sem sessão" e o token de acesso e a dica
   de sessão são descartados de todo modo
-
-### Requirement: Perda de sessão é percebida pela aplicação
-
-Quando a sessão é encerrada por decisão do backend — renovação recusada,
-sessões revogadas por detecção de reuso, conta excluída — a aplicação SHALL
-tratar isso como sessão inexistente e conduzir o usuário à entrada, sem
-apresentar tela protegida vazia ou em erro.
-
-#### Scenario: Sessões revogadas pelo backend
-- **WHEN** o backend recusa a renovação porque as sessões do usuário foram
-  revogadas
-- **THEN** a aplicação passa a tratar o usuário como não autenticado
-- **AND** conduz à tela de entrada informando que a sessão expirou
