@@ -8,8 +8,13 @@
  * ela, usamos um padrão embutido no código — e não um arquivo `.env` do
  * repositório, porque o build da Vercel não os aplica, o que deixaria o site
  * publicado sem backend.
+ *
+ * Em produção o padrão é um caminho relativo, não a URL do Render: o cookie
+ * do token de renovação só se comporta como primeira parte se a requisição
+ * nunca sair, aos olhos do navegador, da própria origem do frontend.
+ * `vercel.json` encaminha `/api/*` para o backend por trás dos bastidores.
  */
-const PRODUCTION_API_URL = 'https://mem-words-backend.onrender.com'
+const PRODUCTION_API_URL = '/api'
 const DEVELOPMENT_API_URL = 'http://localhost:8080'
 
 /** Remove a barra final para evitar URLs com `//` ao concatenar caminhos. */
