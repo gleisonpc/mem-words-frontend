@@ -172,6 +172,83 @@
   }
 }
 
+/* ---------- Temas fixados manualmente ----------
+ *
+ * Ativados por um atributo em vez de um terceiro tema: "do sistema" é a
+ * AUSÊNCIA do atributo, não um valor — nesse caso o `@media` acima
+ * continua sendo a única fonte, sem esta regra interferir. Um seletor de
+ * atributo tem mais especificidade que `:root` sozinho (com ou sem
+ * `@media` em volta, que não soma especificidade), então estes blocos
+ * vencem em qualquer um dos dois temas do sistema operacional, sem
+ * depender de onde ficam neste arquivo. Ver design.md do change
+ * `add-theme-selection`.
+ *
+ * Repetem, de propósito, exatamente os mesmos tokens já definidos acima
+ * para cada tema — não uma variação nova.
+ */
+
+:root[data-theme='light'] {
+  --color-bg: var(--gray-25);
+  --color-surface: var(--gray-0);
+  --color-surface-muted: var(--gray-50);
+
+  --color-border: var(--gray-200);
+  --color-border-strong: var(--gray-500);
+
+  --color-text: var(--gray-900);
+  --color-text-muted: var(--gray-600);
+
+  --color-primary: var(--indigo-600);
+  --color-primary-hover: var(--indigo-700);
+  --color-on-primary: var(--gray-0);
+
+  --color-success: var(--green-700);
+  --color-success-bg: var(--green-50);
+  --color-warning: var(--amber-700);
+  --color-warning-bg: var(--amber-50);
+  --color-danger: var(--red-700);
+  --color-danger-bg: var(--red-50);
+  --color-info: var(--blue-700);
+  --color-info-bg: var(--blue-50);
+
+  --shadow-sm: 0 1px 2px rgb(16 19 22 / 6%);
+  --shadow-md: 0 2px 8px rgb(16 19 22 / 8%);
+  --shadow-lg: 0 8px 24px rgb(16 19 22 / 12%);
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --color-bg: var(--gray-950);
+  --color-surface: var(--gray-850);
+  --color-surface-muted: var(--gray-800);
+
+  --color-border: var(--gray-700);
+  --color-border-strong: var(--gray-500);
+
+  --color-text: var(--gray-100);
+  --color-text-muted: var(--gray-400);
+
+  --color-primary: var(--indigo-300);
+  --color-primary-hover: var(--indigo-200);
+  --color-on-primary: var(--gray-950);
+
+  --color-success: var(--green-400);
+  --color-success-bg: var(--green-950);
+  --color-warning: var(--amber-300);
+  --color-warning-bg: var(--amber-950);
+  --color-danger: var(--red-300);
+  --color-danger-bg: var(--red-950);
+  --color-info: var(--blue-300);
+  --color-info-bg: var(--blue-950);
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-md: 0 2px 8px rgb(0 0 0 / 48%);
+  --shadow-lg: 0 8px 24px rgb(0 0 0 / 56%);
+
+  color-scheme: dark;
+}
+
 /* ---------- Movimento reduzido ----------
  *
  * Zera as durações em vez de remover as regras de transição: os componentes

@@ -5,6 +5,22 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>mem-words</title>
+    <!--
+      Aplica o tema fixado manualmente (se houver) antes de qualquer folha
+      de estilo carregar — evita o lampejo do tema errado. Duplica, de
+      propósito, a leitura mínima que src/theme.js também faz: um
+      `type="module"` (como main.jsx) é adiado por natureza e chegaria
+      tarde demais para isto. Ver design.md do change
+      `add-theme-selection`.
+    -->
+    <script>
+      try {
+        var theme = window.localStorage.getItem('mem-words.theme')
+        if (theme === 'light' || theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', theme)
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
