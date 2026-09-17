@@ -133,6 +133,27 @@ export function AuthProvider({ children }) {
     [signIn],
   )
 
+  /**
+   * Edita nome, e-mail e/ou senha da própria conta.
+   *
+   * Só atualiza o estado depois do `await` ter sucesso: uma recusa do
+   * backend não deve alterar o usuário exposto pela sessão. Espelha o par
+   * estado+depósito que `signIn` já mantém — é o que faz o cabeçalho (e
+   * qualquer outro consumidor de `useAuth().user`) refletir a edição sem
+   * recarregar a página.
+   */
+  const updateProfile = useCallback(
+    async (input) => {
+      const user = await usersApi.updateUser(state.user.id, input)
+
+      tokenStore.setUser(user)
+      setState((current) => ({ ...current, user }))
+
+      return user
+    },
+    [state.user],
+  )
+
   const signOut = useCallback(() => {
     // O estado local cai primeiro, e o depósito avisa o ouvinte: sair é uma
     // intenção do usuário, e um backend inacessível não pode mantê-lo preso
@@ -160,9 +181,10 @@ export function AuthProvider({ children }) {
       signIn,
       signUp,
       signOut,
+      updateProfile,
       dismissNotice,
     }),
-    [state, notice, signIn, signUp, signOut, dismissNotice],
+    [state, notice, signIn, signUp, signOut, updateProfile, dismissNotice],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
