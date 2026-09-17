@@ -85,14 +85,27 @@ da tela de detalhe, não o da revisão. `dueAt` vencido ou de hoje → "hoje";
 um dia à frente → "amanhã"; mais de um dia → "em Nd"; `dueAt` nulo (nunca
 revisado, ou suspenso) → "—".
 
-### Suspender/reativar sem confirmação, mudança otimista revertida em falha
+### Suspender/reativar sem confirmação, mas sem mudança otimista
 
 Diferente de excluir (`ConfirmDeleteButton`), suspender não destrói dado
 nem é irreversível — reativar desfaz completamente. Por isso o botão age
-direto, sem passo de confirmação. A UI atualiza o selo do card
-imediatamente ao clicar (otimista) e reverte se a requisição falhar,
-mostrando o erro — evita esperar a resposta do servidor para uma ação tão
-frequente quanto suspender um card difícil durante uma sessão de revisão.
+direto, sem passo de confirmação: mesmo padrão de "editar"/"excluir" já
+usado em `CardItem` (estado de carregamento no botão, erro exibido se a
+requisição falhar).
+
+Alternativa descartada durante a implementação: atualizar o selo do card
+otimisticamente antes da resposta do servidor. Funciona sem ambiguidade
+para *suspender* (`suspended` é sempre o status de maior prioridade,
+qualquer que seja o `state` do card) — mas *reativar* não tem essa
+propriedade: o status que reaparece (`difficult`/`mature`/`reviewing`)
+depende do limiar de maturidade e da última nota, exatamente a lógica que
+a Decision anterior (`status` calculado no servidor) evita duplicar no
+cliente. Prever esse status no cliente só para a janela otimista
+reintroduziria a duplicação que o design como um todo evita. Em vez
+disso, o botão mostra estado de carregamento (mesmo padrão de
+`ConfirmDeleteButton`/formulários da tela) e o selo só muda quando a
+resposta do servidor chega — consistente com toda outra mutação desta
+tela (criar/editar/excluir card já esperam a resposta do servidor).
 
 ### Blocos de contagem: `ProgressBar`/`Card` existentes, sem componente novo
 
