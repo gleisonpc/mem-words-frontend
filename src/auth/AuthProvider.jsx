@@ -38,13 +38,19 @@ export function AuthProvider({ children }) {
     () =>
       tokenStore.onSessionEnded((reason) => {
         // `signedOut` separa a saída pedida pelo usuário da sessão que caiu
-        // sozinha: só a segunda justifica guardar o destino para voltar.
-        setState({ status: ANONYMOUS, user: null, signedOut: reason === tokenStore.LOGOUT })
-        setNotice(
-          reason === tokenStore.LOGOUT
-            ? null
-            : { variant: 'warning', message: 'Sua sessão expirou. Entre novamente.' },
-        )
+        // sozinha: só a segunda justifica guardar o destino para voltar. A
+        // exclusão de conta também foi pedida pela pessoa — não há
+        // `/perfil` para onde voltar depois dela.
+        const requested = reason === tokenStore.LOGOUT || reason === tokenStore.ACCOUNT_DELETED
+        setState({ status: ANONYMOUS, user: null, signedOut: requested })
+
+        if (reason === tokenStore.LOGOUT) {
+          setNotice(null)
+        } else if (reason === tokenStore.ACCOUNT_DELETED) {
+          setNotice({ variant: 'success', message: 'Sua conta foi excluída.' })
+        } else {
+          setNotice({ variant: 'warning', message: 'Sua sessão expirou. Entre novamente.' })
+        }
       }),
     [],
   )
@@ -154,6 +160,28 @@ export function AuthProvider({ children }) {
     [state.user],
   )
 
+  /**
+   * Exclui a própria conta e encerra a sessão local.
+   *
+   * A ordem importa: só encerra a sessão depois que o backend confirma a
+   * exclusão — uma senha incorreta deve deixar a pessoa exatamente onde
+   * estava, com a sessão intacta, e não deslogada por engano.
+   */
+  const deleteAccount = useCallback(
+    async (currentPassword) => {
+      await usersApi.deleteUser(state.user.id, { currentPassword })
+
+      tokenStore.clear(tokenStore.ACCOUNT_DELETED)
+
+      // Mesmo raciocínio do `signOut`: a revogação segue sem ser aguardada,
+      // e a falha é engolida de propósito — a conta já foi excluída no
+      // backend (a cascata do schema já revogou os refresh tokens), isto
+      // só limpa o cookie do navegador.
+      authApi.logout().catch(() => {})
+    },
+    [state.user],
+  )
+
   const signOut = useCallback(() => {
     // O estado local cai primeiro, e o depósito avisa o ouvinte: sair é uma
     // intenção do usuário, e um backend inacessível não pode mantê-lo preso
@@ -182,9 +210,10 @@ export function AuthProvider({ children }) {
       signUp,
       signOut,
       updateProfile,
+      deleteAccount,
       dismissNotice,
     }),
-    [state, notice, signIn, signUp, signOut, updateProfile, dismissNotice],
+    [state, notice, signIn, signUp, signOut, updateProfile, deleteAccount, dismissNotice],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

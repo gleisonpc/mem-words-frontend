@@ -28,6 +28,7 @@ const STORAGE_KEY = 'mem-words.auth'
 /** Motivos de um encerramento, que o contexto usa para decidir o que dizer. */
 export const LOGOUT = 'logout'
 export const SESSION_EXPIRED = 'session-expired'
+export const ACCOUNT_DELETED = 'account-deleted'
 
 /**
  * Token de acesso em memória — nunca persistido. Depois de uma recarga, ele

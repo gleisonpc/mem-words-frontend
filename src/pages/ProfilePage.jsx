@@ -118,6 +118,58 @@ function AccountForm({ user, updateProfile }) {
   )
 }
 
+/** Formulário de exclusão de conta, revelado sob demanda. */
+function DeleteAccountForm({ deleteAccount, onCancel }) {
+  const submit = useCallback(
+    async (values) => {
+      await deleteAccount(values.currentPassword)
+    },
+    [deleteAccount],
+  )
+
+  const validate = useCallback(
+    (values) => collect({ currentPassword: validateCurrentPassword(values.currentPassword) }),
+    [],
+  )
+
+  const { values, change, fieldErrors, generalError, submitting, handleSubmit } = useAuthForm({
+    initialValues: { currentPassword: '' },
+    validate,
+    submit,
+    describeError: describeError('Não foi possível excluir sua conta.'),
+  })
+
+  return (
+    <form className="profile-form" onSubmit={handleSubmit} noValidate>
+      <Alert variant="warning">
+        Esta ação exclui sua conta e todos os seus baralhos e cards, sem
+        volta.
+      </Alert>
+      {generalError && <Alert variant={generalError.variant}>{generalError.message}</Alert>}
+
+      <Input
+        label="Senha atual"
+        type="password"
+        name="currentPassword"
+        autoComplete="current-password"
+        value={values.currentPassword}
+        onChange={change('currentPassword')}
+        error={fieldErrors.currentPassword}
+        disabled={submitting}
+      />
+
+      <div className="profile-form__actions">
+        <Button variant="ghost" type="button" disabled={submitting} onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button variant="danger" type="submit" loading={submitting}>
+          {submitting ? 'Excluindo...' : 'Excluir conta'}
+        </Button>
+      </div>
+    </form>
+  )
+}
+
 /** Formulário de troca de senha, revelado sob demanda. */
 function PasswordForm({ updateProfile, onDone, onCancel }) {
   const submit = useCallback(
@@ -183,11 +235,12 @@ function PasswordForm({ updateProfile, onDone, onCancel }) {
   )
 }
 
-/** Tela de perfil: editar nome/e-mail e trocar a senha. */
+/** Tela de perfil: editar nome/e-mail, trocar a senha, excluir a conta. */
 export default function ProfilePage() {
-  const { user, updateProfile } = useAuth()
+  const { user, updateProfile, deleteAccount } = useAuth()
   const [changingPassword, setChangingPassword] = useState(false)
   const [passwordSuccess, setPasswordSuccess] = useState(null)
+  const [deletingAccount, setDeletingAccount] = useState(false)
 
   return (
     <div className="profile">
@@ -216,6 +269,16 @@ export default function ProfilePage() {
             }}
           >
             Trocar senha
+          </Button>
+        )}
+      </Card>
+
+      <Card title="Dados">
+        {deletingAccount ? (
+          <DeleteAccountForm deleteAccount={deleteAccount} onCancel={() => setDeletingAccount(false)} />
+        ) : (
+          <Button variant="danger" onClick={() => setDeletingAccount(true)}>
+            Excluir conta
           </Button>
         )}
       </Card>
