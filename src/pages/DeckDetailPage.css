@@ -47,6 +47,18 @@
   margin: 0;
 }
 
+.deck-detail__review-cta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.deck-detail__review-count {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
 .deck-detail__cards {
   display: flex;
   flex-direction: column;

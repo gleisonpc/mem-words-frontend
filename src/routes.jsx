@@ -9,6 +9,7 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import NotFoundPage from './pages/NotFoundPage'
 import RegisterPage from './pages/RegisterPage'
+import ReviewSessionPage from './pages/ReviewSessionPage'
 
 /**
  * Mapa de rotas da aplicação.
@@ -30,6 +31,7 @@ export default function AppRoutes() {
         <Route element={<AuthenticatedLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/baralhos/:id" element={<DeckDetailPage />} />
+          <Route path="/baralhos/:id/revisar" element={<ReviewSessionPage />} />
         </Route>
       </Route>
 
