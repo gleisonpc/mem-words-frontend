@@ -4,6 +4,20 @@
   gap: var(--space-6);
 }
 
+.home__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.home__title {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+}
+
 .home__loading {
   display: flex;
   justify-content: center;
@@ -15,23 +29,20 @@
   color: var(--color-text-muted);
 }
 
-.home__decks {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.home__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-4);
 }
 
 .home__deck {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-3) var(--space-4);
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+  background: var(--color-surface);
   color: var(--color-text);
   text-decoration: none;
   transition: background-color var(--transition-fast) var(--easing);
@@ -41,13 +52,47 @@
   background: var(--color-surface-muted);
 }
 
+.home__deck-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
 .home__deck-name {
   font-weight: var(--weight-medium);
 }
 
-.home__deck-languages {
+.home__deck-meta {
+  margin: 0;
   font-size: var(--text-sm);
   color: var(--color-text-muted);
+}
+
+.home__deck-mature {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.home__create-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 8rem;
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--easing);
+}
+
+.home__create-tile:hover {
+  background: var(--color-surface-muted);
 }
 
 .deck-form {
