@@ -8,6 +8,7 @@ import DiagnosticsPage from './pages/DiagnosticsPage'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import NotFoundPage from './pages/NotFoundPage'
+import ProfilePage from './pages/ProfilePage'
 import RegisterPage from './pages/RegisterPage'
 import ReviewSessionPage from './pages/ReviewSessionPage'
 
@@ -32,6 +33,7 @@ export default function AppRoutes() {
           <Route path="/" element={<HomePage />} />
           <Route path="/baralhos/:id" element={<DeckDetailPage />} />
           <Route path="/baralhos/:id/revisar" element={<ReviewSessionPage />} />
+          <Route path="/perfil" element={<ProfilePage />} />
         </Route>
       </Route>
 

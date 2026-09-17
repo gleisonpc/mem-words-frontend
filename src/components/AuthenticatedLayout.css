@@ -29,11 +29,16 @@
 .shell__user {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
+  text-decoration: none;
   /* Nome longo não empurra o botão de sair para fora da barra. */
   max-width: 14rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.shell__user:hover {
+  text-decoration: underline;
 }
 
 .shell__content {
