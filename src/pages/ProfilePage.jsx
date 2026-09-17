@@ -9,8 +9,41 @@ import {
   validateNewPassword,
 } from '../auth/validation'
 import ApiError from '../api/ApiError'
+import { getTheme, setTheme } from '../theme'
 import { Alert, Button, Card, Input } from '../components/ui'
 import './ProfilePage.css'
+
+const THEME_OPTIONS = [
+  { value: 'system', label: 'Do sistema' },
+  { value: 'light', label: 'Claro' },
+  { value: 'dark', label: 'Escuro' },
+]
+
+/** Seletor de tema: aplica na hora, sem precisar salvar. */
+function ThemeSelector() {
+  const [theme, setThemeState] = useState(getTheme)
+
+  return (
+    <Card title="Tema">
+      <div className="profile-theme">
+        {THEME_OPTIONS.map(({ value, label }) => (
+          <Button
+            key={value}
+            type="button"
+            variant={theme === value ? 'primary' : 'secondary'}
+            aria-pressed={theme === value}
+            onClick={() => {
+              setTheme(value)
+              setThemeState(value)
+            }}
+          >
+            {label}
+          </Button>
+        ))}
+      </div>
+    </Card>
+  )
+}
 
 function describeError(fallback) {
   return (error) => ({
@@ -159,6 +192,8 @@ export default function ProfilePage() {
   return (
     <div className="profile">
       <AccountForm user={user} updateProfile={updateProfile} />
+
+      <ThemeSelector />
 
       <Card title="Senha">
         {passwordSuccess && !changingPassword && <Alert variant="success">{passwordSuccess}</Alert>}
