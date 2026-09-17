@@ -16,7 +16,9 @@ export default function AuthenticatedLayout() {
   return (
     <div className="shell">
       <header className="shell__bar">
-        <p className="shell__brand">mem-words</p>
+        <Link className="shell__brand" to="/">
+          mem-words
+        </Link>
 
         <div className="shell__session">
           {/* O nome/e-mail é o próprio link para o perfil — não precisa de

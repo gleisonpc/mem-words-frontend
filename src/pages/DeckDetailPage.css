@@ -4,6 +4,17 @@
   gap: var(--space-6);
 }
 
+.deck-detail__back {
+  align-self: flex-start;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.deck-detail__back:hover {
+  text-decoration: underline;
+}
+
 /* Compartilhadas com `HomePage.css`: mesmo padrão visual de formulário de
    baralho/card nas duas telas — duplicado de propósito em vez de um
    arquivo de estilos comum só para isto, para não depender da ordem de

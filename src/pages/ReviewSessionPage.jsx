@@ -103,8 +103,13 @@ export default function ReviewSessionPage() {
 
   if (status === 'loading') {
     return (
-      <div className="review-session__loading">
-        <Spinner label="Carregando sessão de revisão..." />
+      <div className="review-session">
+        <Link className="review-session__back" to={`/baralhos/${id}`}>
+          Encerrar
+        </Link>
+        <div className="review-session__loading">
+          <Spinner label="Carregando sessão de revisão..." />
+        </div>
       </div>
     )
   }
@@ -139,7 +144,14 @@ export default function ReviewSessionPage() {
   const now = new Date()
 
   return (
-    <Card title={`Revisão — ${index + 1} de ${queue.length}`}>
+    <Card
+      title={`Revisão — ${index + 1} de ${queue.length}`}
+      actions={
+        <Link className="ms-button ms-button--ghost ms-button--sm" to={`/baralhos/${id}`}>
+          Encerrar
+        </Link>
+      }
+    >
       <div className="review-session__card" aria-live="polite">
         <p className="review-session__word">{card.word}</p>
 
