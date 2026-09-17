@@ -18,6 +18,8 @@
 .shell__brand {
   margin: 0;
   font-weight: var(--weight-semibold);
+  color: inherit;
+  text-decoration: none;
 }
 
 .shell__session {

@@ -525,8 +525,13 @@ export default function DeckDetailPage() {
 
   if (deckStatus === 'loading') {
     return (
-      <div className="deck-detail__loading">
-        <Spinner label="Carregando baralho..." />
+      <div className="deck-detail">
+        <Link className="deck-detail__back" to="/">
+          ← Baralhos
+        </Link>
+        <div className="deck-detail__loading">
+          <Spinner label="Carregando baralho..." />
+        </div>
       </div>
     )
   }
@@ -574,6 +579,10 @@ export default function DeckDetailPage() {
 
   return (
     <div className="deck-detail">
+      <Link className="deck-detail__back" to="/">
+        ← Baralhos
+      </Link>
+
       <DeckHeader
         deck={deck}
         reviewCount={reviewCount}
