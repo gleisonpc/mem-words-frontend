@@ -6,6 +6,12 @@ export async function getReviewQueue(deckId) {
   return queue
 }
 
+/** Resumo, entre todos os baralhos, dos cards prontos para revisão agora. */
+export async function getTodaySummary() {
+  const { today } = await request('/reviews/today', { auth: true })
+  return today
+}
+
 /** Registra uma nota (`again`/`hard`/`good`/`easy`) para um card. */
 export async function recordReview(cardId, grade) {
   const { card } = await request(`/cards/${cardId}/reviews`, {

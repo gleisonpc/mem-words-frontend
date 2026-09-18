@@ -8,6 +8,7 @@
   font-family: inherit;
   font-weight: var(--weight-medium);
   line-height: var(--leading-tight);
+  text-decoration: none;
   cursor: pointer;
   transition:
     background-color var(--transition-fast) var(--easing),

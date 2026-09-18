@@ -4,6 +4,19 @@
   gap: var(--space-6);
 }
 
+.home__greeting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.home__title {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+}
+
 .home__header {
   display: flex;
   flex-wrap: wrap;
@@ -12,9 +25,9 @@
   justify-content: space-between;
 }
 
-.home__title {
+.home__section-title {
   margin: 0;
-  font-size: var(--text-2xl);
+  font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
 }
 
@@ -29,13 +42,77 @@
   color: var(--color-text-muted);
 }
 
-.home__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: var(--space-4);
+/* ---------- Revisão de hoje ---------- */
+
+.home__today-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-4) 0;
 }
 
-.home__deck {
+.home__today-empty {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.home__today-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.home__today-count {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+}
+
+.home__today-estimate {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.home__today-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+
+.home__due-bar {
+  display: flex;
+  overflow: hidden;
+  height: 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+}
+
+.home__due-segment {
+  height: 100%;
+}
+
+.home__due-segment--new {
+  background: var(--color-info);
+}
+
+.home__due-segment--learning {
+  background: var(--color-warning);
+}
+
+.home__due-segment--review {
+  background: var(--color-border-strong);
+}
+
+.home__today-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* ---------- Seletor de baralho para "Adicionar palavra" ---------- */
+
+.home__deck-picker {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -43,20 +120,64 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
-  color: var(--color-text);
-  text-decoration: none;
-  transition: background-color var(--transition-fast) var(--easing);
 }
 
-.home__deck:hover {
-  background: var(--color-surface-muted);
+.home__deck-picker-title {
+  margin: 0;
+  font-weight: var(--weight-medium);
 }
 
-.home__deck-header {
+.home__deck-picker-list {
   display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home__deck-picker-list a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.home__deck-picker-list a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Meus baralhos ---------- */
+
+.home__deck-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home__deck-row {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2);
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.home__deck-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.home__deck-row-main:hover .home__deck-name {
+  text-decoration: underline;
 }
 
 .home__deck-name {
@@ -69,30 +190,10 @@
   color: var(--color-text-muted);
 }
 
-.home__deck-mature {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-
-.home__create-tile {
+.home__deck-row-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 8rem;
-  padding: var(--space-4);
-  border: 1px dashed var(--color-border-strong);
-  border-radius: var(--radius-md);
-  background: none;
-  color: var(--color-text-muted);
-  font: inherit;
-  font-weight: var(--weight-medium);
-  cursor: pointer;
-  transition: background-color var(--transition-fast) var(--easing);
-}
-
-.home__create-tile:hover {
-  background: var(--color-surface-muted);
+  gap: var(--space-3);
 }
 
 .deck-form {
