@@ -26,14 +26,88 @@ próprio quando o componente equivalente já existe.
 - **WHEN** as telas são exibidas em qualquer um dos dois temas
 - **THEN** permanecem legíveis, seguindo o tema ativo pelos tokens
 
+### Requirement: Saudação e sequência de dias
+
+A tela inicial SHALL abrir com uma saudação que inclui o primeiro nome do
+usuário autenticado e varia conforme o período do dia (manhã, tarde,
+noite).
+
+Quando o usuário tiver ao menos um dia de sequência ativa
+(`currentStreak` maior que zero), a tela SHALL exibir um selo com quantos
+dias seguidos ele revisou algo. Sem sequência ativa, o selo SHALL NOT
+aparecer.
+
+#### Scenario: Saudação com o nome do usuário
+- **WHEN** a tela inicial é exibida
+- **THEN** a saudação inclui o primeiro nome do usuário autenticado
+
+#### Scenario: Selo de sequência ativa
+- **WHEN** o usuário autenticado tem `currentStreak` maior que zero
+- **THEN** um selo indica quantos dias seguidos ele revisou algo
+
+#### Scenario: Sem sequência ativa
+- **WHEN** o usuário autenticado tem `currentStreak` igual a zero (nunca
+  revisou, ou a sequência foi interrompida)
+- **THEN** nenhum selo de sequência aparece
+
+### Requirement: Resumo de revisão do dia
+
+A tela inicial SHALL exibir um resumo dos cards prontos para revisão
+agora, agregado entre todos os baralhos do usuário: o total, dividido em
+três contagens (novos, aprendendo, revisão), e um tempo estimado para a
+sessão.
+
+A tela SHALL oferecer, a partir desse resumo, a ação de começar uma
+revisão e a ação de adicionar uma palavra.
+
+#### Scenario: Resumo com cards prontos
+- **WHEN** a tela inicial é exibida e há ao menos um card pronto para
+  revisão em algum baralho do usuário
+- **THEN** o resumo mostra o total de cards prontos, as três contagens
+  (novos/aprendendo/revisão) e um tempo estimado para a sessão
+
+#### Scenario: Nenhum card pronto
+- **WHEN** a tela inicial é exibida e não há nenhum card pronto para
+  revisão em nenhum baralho do usuário
+- **THEN** o resumo informa que não há nada para revisar agora, em vez de
+  contagens zeradas sem explicação
+- **AND** a ação de começar uma revisão fica indisponível
+
+#### Scenario: Começar revisão a partir do resumo
+- **WHEN** a ação de começar uma revisão é acionada e há ao menos um
+  baralho com cards prontos
+- **THEN** o usuário é levado à tela de sessão de revisão do baralho mais
+  antigo, entre os que têm cards prontos
+
+#### Scenario: Adicionar palavra com um único baralho
+- **WHEN** a ação de adicionar uma palavra é acionada e o usuário tem
+  exatamente um baralho
+- **THEN** o usuário é levado direto à tela de detalhe desse baralho
+
+#### Scenario: Adicionar palavra com mais de um baralho
+- **WHEN** a ação de adicionar uma palavra é acionada e o usuário tem mais
+  de um baralho
+- **THEN** a tela oferece uma escolha entre os baralhos existentes antes
+  de navegar
+
+#### Scenario: Ações de revisão de hoje indisponíveis sem baralho algum
+- **WHEN** a tela inicial é exibida para um usuário sem nenhum baralho
+- **THEN** o resumo de revisão do dia não aparece, apenas o convite para
+  criar o primeiro baralho
+
+#### Scenario: Resumo indisponível
+- **WHEN** o resumo de revisão do dia não pode ser carregado
+- **THEN** a tela informa a falha nesse resumo, sem impedir o restante da
+  tela inicial (saudação e lista de baralhos) de funcionar
+
 ### Requirement: Lista dos próprios baralhos
 
-A área autenticada SHALL ter uma tela inicial que lista os baralhos do
-usuário autenticado, e SHALL oferecer a ação de criar um novo baralho a
-partir dela.
+A área autenticada SHALL ter uma tela inicial que lista, sob o título
+"Meus baralhos", os baralhos do usuário autenticado, e SHALL oferecer a
+ação de criar um novo baralho a partir dela.
 
-Cada baralho na lista SHALL indicar quantos de seus cards estão prontos
-para revisão agora, e a fração de seus cards já maduros.
+Cada baralho na lista SHALL indicar seu par de idiomas, o total de cards e
+quantos estão prontos para revisão agora.
 
 #### Scenario: Usuário com baralhos
 
@@ -52,12 +126,6 @@ para revisão agora, e a fração de seus cards já maduros.
 - **THEN** ele aparece com um selo indicando que está em dia, em vez do
   selo de contagem
 
-#### Scenario: Progresso de maturidade
-
-- **WHEN** um baralho tem ao menos um card
-- **THEN** a tela exibe a fração de cards já maduros, com uma barra de
-  progresso e o valor em porcentagem
-
 #### Scenario: Usuário sem baralhos
 
 - **WHEN** a tela inicial é exibida para um usuário sem nenhum baralho
@@ -68,6 +136,12 @@ para revisão agora, e a fração de seus cards já maduros.
 
 - **WHEN** um baralho da lista é selecionado
 - **THEN** o usuário é levado à tela de detalhe daquele baralho
+
+#### Scenario: Progresso de maturidade
+
+- **WHEN** a tela inicial é exibida
+- **THEN** nenhuma linha da lista mostra a fração de cards maduros — essa
+  informação passa a existir apenas na tela de detalhe do baralho
 
 ### Requirement: Criação de baralho
 
@@ -108,6 +182,10 @@ exibe o nome do baralho, o par de idiomas e a lista paginada de seus cards.
 A tela SHALL oferecer a ação de iniciar uma revisão do baralho, indicando
 quantos cards estão prontos para revisão agora.
 
+A tela SHALL exibir, em blocos separados e visíveis assim que o baralho
+carrega, quantos de seus cards estão em cada um dos quatro status que o
+backend conta: novos, aprendendo, maduros e suspensos.
+
 #### Scenario: Baralho com cards
 - **WHEN** a tela de detalhe de um baralho com cards é exibida
 - **THEN** os cards aparecem com palavra e tradução
@@ -130,6 +208,16 @@ quantos cards estão prontos para revisão agora.
 #### Scenario: Iniciar uma revisão
 - **WHEN** a ação de iniciar uma revisão é acionada
 - **THEN** o usuário é levado à tela de sessão de revisão daquele baralho
+
+#### Scenario: Blocos de contagem por status
+- **WHEN** a tela de detalhe de um baralho é exibida
+- **THEN** quatro blocos mostram, respectivamente, quantos cards estão
+  novos, aprendendo, maduros e suspensos
+
+#### Scenario: Baralho recém-criado, sem cards
+- **WHEN** a tela de detalhe de um baralho sem nenhum card é exibida
+- **THEN** os quatro blocos de contagem aparecem todos com `0`, e não
+  ocultos
 
 ### Requirement: Edição e exclusão de um baralho
 
@@ -268,3 +356,86 @@ baralho está indisponível.
 
 - **WHEN** a tela de detalhe de um baralho é exibida normalmente
 - **THEN** um link de volta para a lista de baralhos está visível
+
+### Requirement: Busca e filtro de cards por status
+
+A lista de cards da tela de detalhe SHALL oferecer um campo de busca por
+palavra e um filtro por status (todos, novo, aprendendo, difícil,
+maduro, em revisão, suspenso), aplicados sobre o conjunto inteiro de
+cards do baralho — não só a página já carregada.
+
+Buscar ou filtrar SHALL reiniciar a lista na primeira página, e a
+paginação exibida SHALL refletir o total já filtrado.
+
+#### Scenario: Buscar por palavra
+- **WHEN** um texto é digitado no campo de busca
+- **THEN** a lista passa a mostrar só os cards cuja palavra contém esse
+  texto, e a paginação reflete esse total
+
+#### Scenario: Filtrar por status
+- **WHEN** um status é selecionado no filtro
+- **THEN** a lista passa a mostrar só os cards com aquele status
+
+#### Scenario: Busca e filtro combinados
+- **WHEN** um texto de busca e um status estão ativos ao mesmo tempo
+- **THEN** a lista mostra só os cards que casam com os dois critérios
+
+#### Scenario: Nenhum resultado
+- **WHEN** a busca ou o filtro não casam com nenhum card do baralho
+- **THEN** a tela informa que nenhum card foi encontrado, em vez de uma
+  lista vazia sem explicação
+
+#### Scenario: Limpar busca e filtro
+- **WHEN** a busca é limpa e o filtro volta a "todos"
+- **THEN** a lista volta a mostrar todos os cards do baralho, paginados
+  como antes
+
+### Requirement: Selo de status de um card
+
+Cada card listado SHALL exibir um selo com seu status — novo, aprendendo,
+difícil, maduro, em revisão ou suspenso — e, quando o card já tiver uma
+próxima revisão agendada (`dueAt`), a data dessa próxima revisão.
+
+Um card sem `dueAt` (nunca revisado, ou suspenso) SHALL indicar a
+ausência de próxima revisão, em vez de uma data vazia ou incorreta.
+
+#### Scenario: Cada status tem um selo distinguível
+- **WHEN** a lista de cards é exibida
+- **THEN** cada card mostra o selo correspondente ao seu status, e o
+  texto do selo por si só identifica o status, sem depender só da cor
+
+#### Scenario: Próxima revisão de um card agendado
+- **WHEN** um card tem `dueAt` no futuro ou já vencido
+- **THEN** a tela mostra a data (ou "hoje", quando já venceu) dessa
+  próxima revisão
+
+#### Scenario: Card sem próxima revisão
+- **WHEN** um card nunca foi revisado, ou está suspenso
+- **THEN** a tela indica que não há próxima revisão agendada, em vez de
+  uma data vazia
+
+### Requirement: Suspensão e reativação de um card
+
+Cada card listado SHALL oferecer a ação de suspendê-lo ou reativá-lo,
+conforme seu status atual — suspender tira o card da revisão até o
+usuário decidir reativá-lo, e a escolha de quando é sempre do usuário,
+nunca automática.
+
+Suspender ou reativar um card SHALL atualizar seu selo de status
+imediatamente, sem exigir recarregar a página.
+
+#### Scenario: Suspender um card ativo
+- **WHEN** a ação de suspender é acionada em um card que não está
+  suspenso
+- **THEN** o card passa a mostrar o selo "suspenso"
+
+#### Scenario: Reativar um card suspenso
+- **WHEN** a ação de reativar é acionada em um card suspenso
+- **THEN** o card volta a mostrar o selo do status que tinha antes de
+  ser suspenso
+
+#### Scenario: Falha ao suspender ou reativar
+- **WHEN** a requisição de suspender ou reativar falha
+- **THEN** a tela exibe a falha, e o selo do card continua mostrando seu
+  status anterior — a ação espera a resposta do servidor antes de mudar
+  o selo, então nada precisa ser desfeito
