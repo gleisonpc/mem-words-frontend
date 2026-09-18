@@ -43,19 +43,32 @@
 }
 
 .deck-detail__meta {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--space-2) var(--space-4);
   margin: 0;
   font-size: var(--text-sm);
-}
-
-.deck-detail__meta dt {
   color: var(--color-text-muted);
 }
 
-.deck-detail__meta dd {
+.deck-detail__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-4);
+}
+
+.deck-detail__stat-value {
   margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+}
+
+.deck-detail__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.deck-detail__filters .ms-field {
+  flex: 1 1 200px;
 }
 
 .deck-detail__review-cta {
@@ -99,6 +112,19 @@
 
 .deck-detail__card-translation {
   margin: 0;
+  color: var(--color-text-muted);
+}
+
+.deck-detail__card-status {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+}
+
+.deck-detail__card-next-review {
+  font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
 
