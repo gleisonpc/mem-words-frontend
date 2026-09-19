@@ -85,7 +85,7 @@ salvar.
 `cardValidate`, `cardInputFromValues`, `cardFields`, `EMPTY_CARD_VALUES`,
 `synonymsToText`, `textToSynonyms`, `optionalText`, `requiredText` e
 `describeApiError` saem de `DeckDetailPage.jsx` para um módulo novo,
-`src/pages/cardForm.js` (funções puras e um componente de campos, sem
+`src/pages/cardForm.jsx` (funções puras e um componente de campos, sem
 estado próprio) — usado pela tela nova (formulário de criação) e por
 `CardEditForm`, que continua em `DeckDetailPage.jsx`. `CreateCardForm` e o
 estado que só existia para ele (`createFormKey`) saem de `DeckDetailPage.jsx`

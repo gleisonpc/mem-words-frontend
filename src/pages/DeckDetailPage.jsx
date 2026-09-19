@@ -1,14 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { deleteDeck, getDeck, updateDeck } from '../api/decks'
-import {
-  createCard,
-  deleteCard,
-  listCards,
-  suspendCard,
-  unsuspendCard,
-  updateCard,
-} from '../api/cards'
+import { deleteCard, listCards, suspendCard, unsuspendCard, updateCard } from '../api/cards'
 import { getReviewQueue } from '../api/reviews'
 import ApiError from '../api/ApiError'
 import useAuthForm from '../auth/useAuthForm'
@@ -23,6 +16,14 @@ import {
   Pagination,
   Spinner,
 } from '../components/ui'
+import {
+  CardFields,
+  cardInputFromValues,
+  cardValidate,
+  describeApiError,
+  requiredText,
+  synonymsToText,
+} from './cardForm'
 import './DeckDetailPage.css'
 
 const PAGE_SIZE = 10
@@ -83,36 +84,6 @@ const CREATED_MONTH_FORMAT = new Intl.DateTimeFormat('pt-BR', { month: 'long', y
 /** "criado em <mês> de <ano>", a partir de `createdAt`. */
 function formatCreatedMonth(createdAt) {
   return CREATED_MONTH_FORMAT.format(new Date(createdAt))
-}
-
-function requiredText(value, label) {
-  return value.trim() === '' ? `Informe ${label}.` : null
-}
-
-/** Converte um campo opcional de texto: vazio vira "sem valor" (omitido no envio). */
-function optionalText(value) {
-  const trimmed = value.trim()
-  return trimmed === '' ? undefined : trimmed
-}
-
-function synonymsToText(synonyms) {
-  return (synonyms ?? []).join(', ')
-}
-
-/** Sinônimos aceitam array vazio explícito — diferente dos demais opcionais, que
- * o backend não permite limpar de volta (ver design.md). */
-function textToSynonyms(value) {
-  return value
-    .split(',')
-    .map((s) => s.trim())
-    .filter((s) => s !== '')
-}
-
-function describeApiError(fallback) {
-  return (error) => ({
-    variant: 'danger',
-    message: error instanceof ApiError ? error.message : fallback,
-  })
 }
 
 /** Formulário de nome/idiomas — reaproveitado para editar o baralho. */
@@ -282,134 +253,6 @@ function DeckHeader({ deck, reviewCount, onUpdated, onDeleted }) {
   )
 }
 
-function cardValidate(values) {
-  return collect({
-    word: requiredText(values.word, 'a palavra'),
-    translation: requiredText(values.translation, 'a tradução'),
-  })
-}
-
-function cardInputFromValues(values) {
-  return {
-    word: values.word.trim(),
-    translation: values.translation.trim(),
-    partOfSpeech: optionalText(values.partOfSpeech),
-    synonyms: textToSynonyms(values.synonyms),
-    exampleSentence: optionalText(values.exampleSentence),
-    exampleTranslation: optionalText(values.exampleTranslation),
-    personalNote: optionalText(values.personalNote),
-  }
-}
-
-const EMPTY_CARD_VALUES = {
-  word: '',
-  translation: '',
-  partOfSpeech: '',
-  synonyms: '',
-  exampleSentence: '',
-  exampleTranslation: '',
-  personalNote: '',
-}
-
-function cardFields(values, change, fieldErrors, disabled) {
-  return (
-    <>
-      <Input
-        label="Palavra"
-        name="word"
-        value={values.word}
-        onChange={change('word')}
-        error={fieldErrors.word}
-        disabled={disabled}
-      />
-      <Input
-        label="Tradução"
-        name="translation"
-        value={values.translation}
-        onChange={change('translation')}
-        error={fieldErrors.translation}
-        disabled={disabled}
-      />
-      <Input
-        label="Classe gramatical"
-        name="partOfSpeech"
-        placeholder="ex.: substantivo"
-        value={values.partOfSpeech}
-        onChange={change('partOfSpeech')}
-        error={fieldErrors.partOfSpeech}
-        disabled={disabled}
-      />
-      <Input
-        label="Sinônimos"
-        name="synonyms"
-        placeholder="separados por vírgula"
-        value={values.synonyms}
-        onChange={change('synonyms')}
-        error={fieldErrors.synonyms}
-        disabled={disabled}
-      />
-      <Input
-        label="Frase de exemplo"
-        name="exampleSentence"
-        value={values.exampleSentence}
-        onChange={change('exampleSentence')}
-        error={fieldErrors.exampleSentence}
-        disabled={disabled}
-      />
-      <Input
-        label="Tradução da frase"
-        name="exampleTranslation"
-        value={values.exampleTranslation}
-        onChange={change('exampleTranslation')}
-        error={fieldErrors.exampleTranslation}
-        disabled={disabled}
-      />
-      <Input
-        label="Anotação pessoal"
-        name="personalNote"
-        value={values.personalNote}
-        onChange={change('personalNote')}
-        error={fieldErrors.personalNote}
-        disabled={disabled}
-      />
-    </>
-  )
-}
-
-/** Formulário de criação de card. */
-function CreateCardForm({ deckId, onCreated }) {
-  const submit = useCallback(
-    async (values) => {
-      const card = await createCard(deckId, cardInputFromValues(values))
-      onCreated(card)
-    },
-    [deckId, onCreated],
-  )
-
-  const { values, change, fieldErrors, generalError, submitting, handleSubmit } = useAuthForm({
-    initialValues: EMPTY_CARD_VALUES,
-    validate: cardValidate,
-    submit,
-    describeError: describeApiError('Não foi possível criar o card.'),
-  })
-
-  return (
-    <Card title="Novo card">
-      {generalError && <Alert variant={generalError.variant}>{generalError.message}</Alert>}
-
-      <form className="deck-form" onSubmit={handleSubmit} noValidate>
-        {cardFields(values, change, fieldErrors, submitting)}
-
-        <div className="deck-form__actions">
-          <Button type="submit" loading={submitting}>
-            {submitting ? 'Criando...' : 'Criar card'}
-          </Button>
-        </div>
-      </form>
-    </Card>
-  )
-}
-
 /** Formulário de edição de um card existente. */
 function CardEditForm({ card, onSaved, onCancel }) {
   const submit = useCallback(
@@ -438,7 +281,7 @@ function CardEditForm({ card, onSaved, onCancel }) {
     <form className="deck-form" onSubmit={handleSubmit} noValidate>
       {generalError && <Alert variant={generalError.variant}>{generalError.message}</Alert>}
 
-      {cardFields(values, change, fieldErrors, submitting)}
+      <CardFields values={values} change={change} fieldErrors={fieldErrors} disabled={submitting} />
 
       <div className="deck-form__actions">
         <Button variant="ghost" type="button" disabled={submitting} onClick={onCancel}>
@@ -582,11 +425,6 @@ export default function DeckDetailPage() {
   // `null` enquanto não sabemos — falha ao buscar não impede o resto da
   // tela, só some com a contagem (o botão de revisar continua alcançável).
   const [reviewCount, setReviewCount] = useState(null)
-  // Muda a cada card criado, para remontar `CreateCardForm` com campos
-  // vazios — `useAuthForm` não limpa os valores depois de um envio
-  // bem-sucedido, porque nas telas de autenticação o sucesso navega para
-  // outro lugar; aqui o formulário continua na tela.
-  const [createFormKey, setCreateFormKey] = useState(0)
 
   const loadDeck = useCallback(async () => {
     setDeckStatus('loading')
@@ -702,19 +540,12 @@ export default function DeckDetailPage() {
     )
   }
 
-  // Criar e excluir mudam quantos cards existem e, por tabela, quantas
-  // páginas há — recarregar a página atual do servidor (a mesma técnica de
-  // `reload()` documentada no design.md) evita que a lista em memória fique
-  // com mais ou menos itens do que o tamanho de página permite.
-  const handleCardCreated = (card) => {
-    void card
-    setCreateFormKey((current) => current + 1)
-    // Um card novo muda `cardCount` e `newCount` no baralho — recarregar
-    // o baralho evita patchear os cinco campos de contagem à mão.
-    refreshDeckStats()
-    loadCards()
-  }
-
+  // Excluir muda quantos cards existem e, por tabela, quantas páginas há —
+  // recarregar a página atual do servidor (a mesma técnica de `reload()`
+  // documentada no design.md) evita que a lista em memória fique com mais
+  // ou menos itens do que o tamanho de página permite. Criar um card agora
+  // acontece em `AddCardPage`, que já volta para cá navegando — a tela
+  // recarrega do zero, sem precisar de um retorno explícito aqui.
   const handleCardUpdated = (updated) => {
     // Edição não muda quantos cards existem nem sua ordem — atualizar em
     // memória evita uma ida ao servidor sem motivo.
@@ -760,7 +591,17 @@ export default function DeckDetailPage() {
 
       <DeckStats deck={deck} />
 
-      <Card title="Cards">
+      <Card
+        title="Cards"
+        actions={
+          <Link
+            className="ms-button ms-button--primary ms-button--sm"
+            to={`/baralhos/${id}/cards/novo`}
+          >
+            Adicionar card
+          </Link>
+        }
+      >
         <div className="deck-detail__filters">
           <Input
             label="Buscar palavra"
@@ -826,8 +667,6 @@ export default function DeckDetailPage() {
           </>
         )}
       </Card>
-
-      <CreateCardForm key={createFormKey} deckId={id} onCreated={handleCardCreated} />
     </div>
   )
 }

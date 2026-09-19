@@ -3,6 +3,7 @@ import GuestOnly from './auth/GuestOnly'
 import RequireAuth from './auth/RequireAuth'
 import AuthenticatedLayout from './components/AuthenticatedLayout'
 import Gallery from './components/Gallery'
+import AddCardPage from './pages/AddCardPage'
 import DeckDetailPage from './pages/DeckDetailPage'
 import DiagnosticsPage from './pages/DiagnosticsPage'
 import HomePage from './pages/HomePage'
@@ -33,6 +34,7 @@ export default function AppRoutes() {
           <Route path="/" element={<HomePage />} />
           <Route path="/baralhos/:id" element={<DeckDetailPage />} />
           <Route path="/baralhos/:id/revisar" element={<ReviewSessionPage />} />
+          <Route path="/baralhos/:id/cards/novo" element={<AddCardPage />} />
           <Route path="/perfil" element={<ProfilePage />} />
         </Route>
       </Route>
