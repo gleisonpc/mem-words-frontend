@@ -1,0 +1,37 @@
+/* `.deck-detail`, `.deck-detail__back`, `.deck-detail__loading` e
+   `.deck-form` vêm de `DeckDetailPage.css` — todas as páginas são
+   importadas estaticamente em `routes.jsx` (sem `React.lazy`), então o
+   build de produção já reúne todo o CSS em um único arquivo, carregado
+   independentemente de qual tela é aberta primeiro. */
+
+.add-card-form__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+/* Campos sem par definido no mockup ocupam a largura cheia da grade. */
+.add-card-form__grid .ms-field--full {
+  grid-column: 1 / -1;
+}
+
+.add-card-suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.add-card-suggestion__title {
+  margin: 0;
+  font-weight: var(--weight-medium);
+}
+
+.add-card-suggestion__item {
+  margin: 0;
+}
+
+.add-card-suggestion__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
