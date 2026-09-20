@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { createCard } from '../api/cards'
 import { getDeck, listDecks } from '../api/decks'
-import { fetchSuggestion, resolveLanguagePair } from '../api/dictionaryLookup'
+import { fetchSuggestion } from '../api/dictionaryLookup'
 import ApiError from '../api/ApiError'
 import useAuthForm from '../auth/useAuthForm'
 import { Alert, Button, Card, Spinner } from '../components/ui'
@@ -73,10 +73,8 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
       return
     }
 
-    if (resolveLanguagePair(selectedDeck.sourceLanguage, selectedDeck.targetLanguage) === null) {
-      return
-    }
-
+    // O backend decide se o par de idiomas é reconhecido — responde
+    // `suggestion: null` sem chamar serviço externo algum quando não é.
     const requestId = ++suggestionRequestId.current
     const found = await fetchSuggestion({
       word,

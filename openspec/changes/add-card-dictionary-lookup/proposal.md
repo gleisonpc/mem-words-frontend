@@ -58,3 +58,10 @@ do mockup.
 - Sem mudança no backend (`mem-words-backend`) nem no modelo de card: a
   sugestão de áudio mencionada no mockup não é implementada, porque não há
   onde persisti-la (ver design.md, Non-Goals).
+
+> **Correção pós-merge:** os dois parágrafos acima descrevem a primeira
+> versão. Um change seguinte, `add-dictionary-suggestion-endpoint` no
+> `mem-words-backend`, moveu as três chamadas externas para lá — o
+> navegador nunca mais fala com Wiktionary/Datamuse/MyMemory diretamente, só
+> com o próprio backend (`GET /dictionary/suggest`), como em todo o resto
+> da aplicação. Ver design.md, "Correção pós-merge #2".
