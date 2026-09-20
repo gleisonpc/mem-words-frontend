@@ -70,6 +70,14 @@ A sugestão obtida SHALL ser exibida separada dos campos do formulário, com
 uma ação para aplicá-la e outra para descartá-la, e NÃO SHALL preencher
 nenhum campo sem essa confirmação explícita.
 
+> **Correção pós-lançamento:** a sugestão sempre pôde trazer, além de
+> tradução, frase de exemplo e sinônimos, a tradução da frase de exemplo
+> e a classe gramatical da palavra — mas a tela só exibia e aplicava os
+> três primeiros campos, deixando "Tradução da frase" e "Classe
+> gramatical" sempre em branco mesmo quando o backend os devolvia.
+> Corrigido para exibir e aplicar também esses dois campos, do mesmo jeito
+> que os demais.
+
 Aplicada, a sugestão SHALL permanecer editável como qualquer valor digitado
 manualmente.
 
