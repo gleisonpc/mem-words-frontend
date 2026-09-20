@@ -96,42 +96,58 @@ são a mesma regra de validação (espelha o backend) em dois lugares — a
 motivação já registrada no requirement "Validação no cliente espelhando as
 regras do backend" para não ter duas fontes da mesma regra.
 
-### Sugestão automática: tabela de idiomas reconhecidos, busca ao perder o foco na palavra
-
-Tabela local, em `src/api/dictionaryLookup.js`, mapeando texto comum (em
-português e inglês, sem diferenciar maiúsculas/acentos) para um código: pelo
-menos inglês, português, espanhol, francês, alemão, italiano e japonês. A
-sugestão só é buscada quando o idioma de origem do baralho escolhido mapeia
-para inglês (`en`) — os dois serviços de dicionário/sinônimos escolhidos só
-cobrem inglês — e o idioma de destino mapeia para algum código da tabela (a
-tradução usa esse código). Fora disso, a tela nunca chama os serviços
-externos: não há "tentativa que falha", porque o par não é reconhecido.
+### Sugestão automática: busca ao perder o foco na palavra, decidida pelo backend
 
 A busca dispara quando o campo Palavra perde o foco (`onBlur`), não a cada
-tecla — evita uma chamada por caractere digitado. As três chamadas (Wiktionary,
-Datamuse, MyMemory) saem em paralelo (`Promise.allSettled`); cada uma que
-falhar ou não devolver conteúdo aproveitável simplesmente não contribui à
-sugestão. A caixa de sugestão só aparece quando ao menos uma das três traz
-algo; se nenhuma trouxer, nada é exibido, sem mensagem de "sem sugestão"
-(silencioso, como o requirement pede).
+tecla — evita uma chamada por caractere digitado. `dictionaryLookup.js`
+chama `GET /dictionary/suggest?word=&sourceLanguage=&targetLanguage=` no
+backend, que decide sozinho se o par de idiomas é reconhecido (a tabela de
+idiomas, a resolução do par em qualquer sentido, e as três chamadas a
+Wiktionary/Datamuse/MyMemory vivem lá agora — ver Correções abaixo) e
+responde `{ suggestion: {...} | null }`. A caixa de sugestão só aparece
+quando `suggestion` traz ao menos um campo; se vier `null`, nada é exibido,
+sem mensagem de "sem sugestão" (silencioso, como o requirement pede).
+
+> **Correção pós-merge #1 (verificada em produção):** a primeira versão
+> resolvia o par de idiomas no navegador e exigia que fosse
+> especificamente o idioma de *origem* a mapear para inglês. Baralhos
+> reais, porém, guardam o par nos dois sentidos — "Inglês → Português" e
+> "Português → Inglês" — porque o backend não amarra
+> `sourceLanguage`/`targetLanguage` a qual campo do card (`word`/
+> `translation`) cada um descreve; é só texto livre. Um baralho de produção
+> com `sourceLanguage: "Portugues"` e `targetLanguage: "ingles"` (card em
+> inglês, tradução em português) não disparava a sugestão nenhuma, sem
+> nenhum erro visível. Corrigido para aceitar os dois sentidos — hoje essa
+> lógica mora no backend (ver Correção #2), mas a regra é a mesma: o lado
+> que mapeia para inglês vira a origem usada nas buscas de
+> definição/sinônimos, o outro vira o destino da tradução.
+
+> **Correção pós-merge #2 — sugestão passa a vir do backend:** a primeira
+> versão chamava Wiktionary, Datamuse e MyMemory direto do navegador,
+> quebrando a única regra de saída da aplicação (o frontend só fala com o
+> backend; `client.js` é documentado como "a única porta de saída"). Um
+> segundo change, `add-dictionary-suggestion-endpoint` no
+> `mem-words-backend`, moveu toda essa lógica — tabela de idiomas,
+> `resolveLanguagePair`, as três chamadas em paralelo, a degradação
+> silenciosa — para `GET /dictionary/suggest`. `dictionaryLookup.js` no
+> frontend encolheu para uma chamada autenticada a esse endpoint via
+> `request()` de `client.js`; o navegador não fala mais com nenhum dos três
+> serviços externos.
 
 Alternativa descartada: debounce a cada tecla digitada. Rejeitada porque
-Wiktionary/Datamuse/MyMemory são consultados por palavra inteira — buscar a
-cada poucas teclas geraria uma sequência de requisições descartadas sem
-necessidade; `onBlur` já cobre o caso de uso (preencher a palavra e seguir
-para o próximo campo) com uma única chamada.
+a busca é por palavra inteira — buscar a cada poucas teclas geraria uma
+sequência de requisições descartadas sem necessidade; `onBlur` já cobre o
+caso de uso (preencher a palavra e seguir para o próximo campo) com uma
+única chamada.
 
-### Cliente de dicionário isolado, com tempo limite curto e falha nunca lançada
+### Cliente de dicionário chama o backend, com falha nunca lançada
 
-`src/api/dictionaryLookup.js` não reaproveita `src/api/client.js` (que é
-específico do backend do mem-words — token, renovação de sessão, URL base
-configurada). É um módulo à parte, com `fetch` e `AbortController` própios,
-tempo limite curto (a soma das três chamadas não deve travar a tela — 4s por
-chamada, contra os 15s do backend, que hiberna e pode legitimamente demorar;
-os serviços de dicionário não têm esse motivo para demorar). Sua função
-principal nunca lança: qualquer falha (rede, tempo limite, resposta sem
-conteúdo aproveitável) devolve partes ausentes da sugestão, e a tela decide
-não mostrar nada quando as três faltam.
+`src/api/dictionaryLookup.js` reaproveita `request()` de `src/api/client.js`
+(desde a Correção #2 acima) — a chamada é autenticada, com o mesmo tempo
+limite e a mesma renovação de sessão de qualquer outra chamada ao backend,
+sem lógica própria de rede. Sua função principal continua nunca lançando:
+qualquer falha (rede, tempo limite, backend fora do ar) vira `null`, e a
+tela decide não mostrar nada.
 
 Alternativa descartada: propagar erro e mostrar um alerta de "sugestão
 indisponível". Rejeitada pelo requirement da proposta — a sugestão é um

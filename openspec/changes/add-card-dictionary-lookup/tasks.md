@@ -36,3 +36,17 @@
 - [x] 6.1 Rodar `npm run lint` e confirmar que passa sem erros
 - [x] 6.2 Rodar `npm run build` e confirmar que o build de produção passa sem erros
 - [x] 6.3 Testado no dev server contra um backend local (Postgres real, migrations aplicadas): cadastro, criar baralho, criar card com sugestão aplicada e sem sugestão (par não reconhecido), "salvar e criar outra" limpando o formulário, "Salvar" voltando para o detalhe com os dois cards na lista, e os estados de baralho indisponível (id inexistente) e carregando na tela nova
+
+## 7. Correção pós-merge: par de idiomas invertido não disparava sugestão
+
+- [x] 7.1 Reproduzido em produção (`mem-words-frontend.vercel.app`) contra um baralho real do usuário (`sourceLanguage: "Portugues"`, `targetLanguage: "ingles"`): nenhuma requisição aos três serviços saía ao sair do campo Palavra — `resolveLanguagePair` exigia que fosse especificamente a *origem* a mapear para inglês, e baralhos reais guardam o par nos dois sentidos
+- [x] 7.2 Corrigido `resolveLanguagePair` em `src/api/dictionaryLookup.js` para aceitar o par em qualquer ordem — o lado que mapeia para inglês vira `source` (usado nas buscas de definição/sinônimos), o outro vira `target` (código da tradução)
+- [x] 7.3 Verificado com um script Node isolado: `resolveLanguagePair('Portugues', 'ingles')` e `resolveLanguagePair('ingles', 'Portugues')` agora devolvem o mesmo par resolvido, e `fetchSuggestion` com o par invertido do usuário devolveu tradução, frase de exemplo e sinônimos reais
+- [x] 7.4 `npm run lint` e `npm run build` continuam passando sem erros
+
+## 8. Correção pós-merge: sugestão passa a vir do backend, não do navegador
+
+- [x] 8.1 Reescrever `src/api/dictionaryLookup.js` para chamar `GET /dictionary/suggest` (`mem-words-backend`, change `add-dictionary-suggestion-endpoint`) via `request()` de `client.js`, removendo `resolveLanguagePair`, a tabela de idiomas, e o `fetch`/`AbortController` próprios — a resolução do par e as três chamadas externas agora vivem no backend
+- [x] 8.2 Em `AddCardPage.jsx`, remover o pré-check local com `resolveLanguagePair` em `handleWordBlur` — a tela sempre chama `fetchSuggestion` quando a palavra não está vazia, e o backend decide sozinho se o par é reconhecido
+- [x] 8.3 Rodar `npm run lint` e `npm run build` e confirmar que passam sem erros
+- [x] 8.4 Testado de ponta a ponta (Chromium/Playwright) contra o backend local com o endpoint novo, capturando toda requisição de rede: sugestão apareceu para o par invertido real ("Portugues"/"ingles", tradução/exemplo/sinônimos reais), nenhuma caixa apareceu para um par não reconhecido (Klingon/Vulcano), e a captura de rede confirmou 2 chamadas a `/dictionary/suggest` (o próprio backend) e **zero** chamadas diretas a Wiktionary/Datamuse/MyMemory
