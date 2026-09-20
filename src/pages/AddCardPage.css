@@ -15,6 +15,21 @@
   grid-column: 1 / -1;
 }
 
+.add-card-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  /* `ms-field--full` só cuida da coluna na grade; o campo em si tem
+     margem/rótulo que este bloco não precisa. */
+  margin-top: calc(-1 * var(--space-2));
+}
+
+.add-card-search__status {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
 .add-card-suggestion {
   display: flex;
   flex-direction: column;

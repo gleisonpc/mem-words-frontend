@@ -43,30 +43,62 @@ baralho escolhido.
 
 ## ADDED Requirements
 
-### Requirement: Sugestão automática de dicionário ao criar um card
+### Requirement: Sugestão de dicionário ao criar um card
 
-Enquanto a palavra é preenchida, a tela de criação de card SHALL tentar
-obter, de serviços públicos de dicionário e tradução, uma sugestão de
-tradução, frase de exemplo e sinônimos, desde que o par de idiomas do
-baralho escolhido seja um par reconhecido pela tela.
+A tela de criação de card SHALL oferecer uma ação explícita ("Buscar
+sugestão") para obter, a partir da palavra digitada, uma sugestão de
+tradução, frase de exemplo e sinônimos. A busca SHALL ocorrer somente
+quando essa ação é acionada — nunca automaticamente enquanto a palavra é
+digitada — para que a pessoa saiba exatamente quando uma busca está
+acontecendo. A ação SHALL ficar indisponível enquanto a palavra estiver
+vazia.
 
-A sugestão SHALL ser exibida separada dos campos do formulário, com uma
-ação para aplicá-la e outra para descartá-la, e NÃO SHALL preencher
+> **Correção pós-lançamento:** a primeira versão buscava automaticamente
+> ao sair do campo Palavra (`onBlur`), sem nenhum indício visual de que
+> uma busca estava em curso nem de que ela não encontrou nada — quem
+> usava não sabia se o recurso funcionava. Trocado por uma ação explícita
+> com estado de carregamento visível e uma mensagem quando a busca não
+> encontra nada, em vez de silêncio total.
+
+Enquanto a busca está em curso, a tela SHALL indicar que a operação está
+em andamento. Concluída sem nenhuma sugestão encontrada — par de idiomas
+não reconhecido, serviço indisponível, ou resposta sem conteúdo
+aproveitável —, a tela SHALL informar que nada foi encontrado para aquela
+palavra, sem tratar isso como erro.
+
+A sugestão obtida SHALL ser exibida separada dos campos do formulário, com
+uma ação para aplicá-la e outra para descartá-la, e NÃO SHALL preencher
 nenhum campo sem essa confirmação explícita.
 
 Aplicada, a sugestão SHALL permanecer editável como qualquer valor digitado
 manualmente.
 
-Indisponibilidade de qualquer serviço externo, resposta sem conteúdo
-aproveitável, ou par de idiomas não reconhecido SHALL ser tratada como
-"sem sugestão": a tela permanece utilizável exatamente como sem a
-sugestão, sem mensagem de erro.
+Trocar a palavra ou o baralho escolhido depois de uma busca SHALL descartar
+a sugestão, ou a mensagem de "nada encontrado", já exibida — nenhuma das
+duas continua correspondendo ao que está nos campos.
 
-#### Scenario: Sugestão disponível
-- **WHEN** a palavra é preenchida com o par de idiomas do baralho
-  reconhecido, e o serviço externo devolve conteúdo
+#### Scenario: Buscar e encontrar sugestão
+- **WHEN** a ação de buscar sugestão é acionada com uma palavra preenchida
+  e o par de idiomas do baralho escolhido é reconhecido, e ao menos um
+  serviço externo devolve conteúdo
 - **THEN** a tela exibe a sugestão de tradução, frase de exemplo e/ou
   sinônimos encontrados, com as ações de usar ou descartar
+
+#### Scenario: Busca em andamento
+- **WHEN** a ação de buscar sugestão é acionada
+- **THEN** a tela indica que a busca está em andamento até a resposta
+  chegar
+
+#### Scenario: Buscar sem encontrar nada
+- **WHEN** a busca é concluída sem nenhuma sugestão — par de idiomas não
+  reconhecido, serviço externo indisponível, ou nenhum conteúdo
+  aproveitável
+- **THEN** a tela informa que não encontrou sugestão para aquela palavra,
+  sem mensagem de erro
+
+#### Scenario: Ação indisponível sem palavra
+- **WHEN** o campo Palavra está vazio
+- **THEN** a ação de buscar sugestão fica indisponível
 
 #### Scenario: Aplicar a sugestão
 - **WHEN** a ação de usar a sugestão é acionada
@@ -77,13 +109,8 @@ sugestão, sem mensagem de erro.
 - **WHEN** a ação de descartar é acionada
 - **THEN** a sugestão deixa de ser exibida e nenhum campo é alterado
 
-#### Scenario: Par de idiomas não reconhecido
-- **WHEN** o baralho escolhido tem um par de idiomas que a tela não
-  reconhece
-- **THEN** a tela funciona como um formulário manual, sem exibir nem
-  tentar obter sugestão
-
-#### Scenario: Serviço externo indisponível
-- **WHEN** a busca de sugestão falha ou não responde a tempo
-- **THEN** a tela permanece utilizável, sem exibir a sugestão e sem
-  mensagem de erro
+#### Scenario: Trocar a palavra ou o baralho descarta o resultado anterior
+- **WHEN** a palavra é editada, ou um baralho diferente é escolhido, depois
+  de uma busca já concluída
+- **THEN** a sugestão ou a mensagem de "nada encontrado" exibida some, até
+  uma nova busca ser acionada
