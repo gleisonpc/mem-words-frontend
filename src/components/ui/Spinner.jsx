@@ -1,3 +1,4 @@
+import useTranslations from '../../i18n/useTranslations'
 import './Spinner.css'
 
 /**
@@ -9,11 +10,13 @@ import './Spinner.css'
  */
 export default function Spinner({
   size = 'md',
-  label = 'Carregando',
+  label,
   decorative = false,
   className = '',
   ...rest
 }) {
+  const t = useTranslations()
+  const resolvedLabel = label ?? t.common.loading
   const classes = `ms-spinner ms-spinner--${size} ${className}`.trim()
 
   if (decorative) {
@@ -25,7 +28,7 @@ export default function Spinner({
   return (
     <span className="ms-spinner-wrap" role="status" {...rest}>
       <span className={classes} aria-hidden="true" />
-      <span className="ms-sr-only">{label}</span>
+      <span className="ms-sr-only">{resolvedLabel}</span>
     </span>
   )
 }

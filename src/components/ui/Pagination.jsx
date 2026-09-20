@@ -1,3 +1,4 @@
+import useTranslations from '../../i18n/useTranslations'
 import Button from './Button'
 import './Pagination.css'
 
@@ -8,21 +9,22 @@ import './Pagination.css'
  * nas listas do app não justifica a complexidade extra.
  */
 export default function Pagination({ page, pageSize, total, onChange, className = '' }) {
+  const t = useTranslations()
   const pageCount = Math.max(1, Math.ceil(total / pageSize))
 
   return (
-    <nav className={`ms-pagination ${className}`.trim()} aria-label="Paginação">
+    <nav className={`ms-pagination ${className}`.trim()} aria-label={t.common.paginationLabel}>
       <Button
         variant="secondary"
         size="sm"
         disabled={page <= 1}
         onClick={() => onChange(page - 1)}
       >
-        Anterior
+        {t.common.previous}
       </Button>
 
       <span className="ms-pagination__status" aria-live="polite">
-        Página {page} de {pageCount}
+        {t.common.pageStatus(page, pageCount)}
       </span>
 
       <Button
@@ -31,7 +33,7 @@ export default function Pagination({ page, pageSize, total, onChange, className 
         disabled={page >= pageCount}
         onClick={() => onChange(page + 1)}
       >
-        Próxima
+        {t.common.next}
       </Button>
     </nav>
   )

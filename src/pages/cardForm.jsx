@@ -1,6 +1,7 @@
 import { collect } from '../auth/validation'
 import ApiError from '../api/ApiError'
 import { Input } from '../components/ui'
+import useTranslations, { getTranslations } from '../i18n/useTranslations'
 
 /**
  * Campos, validação e utilitários de card — compartilhados entre a tela de
@@ -10,7 +11,7 @@ import { Input } from '../components/ui'
  */
 
 export function requiredText(value, label) {
-  return value.trim() === '' ? `Informe ${label}.` : null
+  return value.trim() === '' ? getTranslations().common.validation.required(label) : null
 }
 
 /** Converte um campo opcional de texto: vazio vira "sem valor" (omitido no envio). */
@@ -40,9 +41,10 @@ export function describeApiError(fallback) {
 }
 
 export function cardValidate(values) {
+  const { cardFields } = getTranslations()
   return collect({
-    word: requiredText(values.word, 'a palavra'),
-    translation: requiredText(values.translation, 'a tradução'),
+    word: requiredText(values.word, cardFields.wordRequiredLabel),
+    translation: requiredText(values.translation, cardFields.translationRequiredLabel),
   })
 }
 
@@ -81,10 +83,12 @@ export const EMPTY_CARD_VALUES = {
  * `.deck-form`, que é flex-column, a classe não muda nada).
  */
 export function CardFields({ values, change, fieldErrors, disabled, wordSearch, extraField }) {
+  const t = useTranslations()
+
   return (
     <>
       <Input
-        label="Palavra"
+        label={t.cardFields.word}
         name="word"
         value={values.word}
         onChange={change('word')}
@@ -92,7 +96,7 @@ export function CardFields({ values, change, fieldErrors, disabled, wordSearch, 
         disabled={disabled}
       />
       <Input
-        label="Tradução"
+        label={t.cardFields.translation}
         name="translation"
         value={values.translation}
         onChange={change('translation')}
@@ -101,9 +105,9 @@ export function CardFields({ values, change, fieldErrors, disabled, wordSearch, 
       />
       {wordSearch}
       <Input
-        label="Sinônimos"
+        label={t.cardFields.synonyms}
         name="synonyms"
-        placeholder="separados por vírgula"
+        placeholder={t.cardFields.synonymsPlaceholder}
         value={values.synonyms}
         onChange={change('synonyms')}
         error={fieldErrors.synonyms}
@@ -111,9 +115,9 @@ export function CardFields({ values, change, fieldErrors, disabled, wordSearch, 
       />
       {extraField}
       <Input
-        label="Classe gramatical"
+        label={t.cardFields.partOfSpeech}
         name="partOfSpeech"
-        placeholder="ex.: substantivo"
+        placeholder={t.cardFields.partOfSpeechPlaceholder}
         value={values.partOfSpeech}
         onChange={change('partOfSpeech')}
         error={fieldErrors.partOfSpeech}
@@ -121,7 +125,7 @@ export function CardFields({ values, change, fieldErrors, disabled, wordSearch, 
         className="ms-field--full"
       />
       <Input
-        label="Frase de exemplo"
+        label={t.cardFields.exampleSentence}
         name="exampleSentence"
         value={values.exampleSentence}
         onChange={change('exampleSentence')}
@@ -130,7 +134,7 @@ export function CardFields({ values, change, fieldErrors, disabled, wordSearch, 
         className="ms-field--full"
       />
       <Input
-        label="Tradução da frase"
+        label={t.cardFields.exampleTranslation}
         name="exampleTranslation"
         value={values.exampleTranslation}
         onChange={change('exampleTranslation')}
@@ -139,7 +143,7 @@ export function CardFields({ values, change, fieldErrors, disabled, wordSearch, 
         className="ms-field--full"
       />
       <Input
-        label="Anotação pessoal"
+        label={t.cardFields.personalNote}
         name="personalNote"
         value={values.personalNote}
         onChange={change('personalNote')}

@@ -9,23 +9,26 @@ import {
   validateNewPassword,
 } from '../auth/validation'
 import ApiError from '../api/ApiError'
+import { getLanguage, setLanguage } from '../i18n/language'
+import useTranslations from '../i18n/useTranslations'
 import { getTheme, setTheme } from '../theme'
 import { Alert, Button, Card, Input } from '../components/ui'
 import './ProfilePage.css'
 
-const THEME_OPTIONS = [
-  { value: 'system', label: 'Do sistema' },
-  { value: 'light', label: 'Claro' },
-  { value: 'dark', label: 'Escuro' },
-]
-
 /** Seletor de tema: aplica na hora, sem precisar salvar. */
 function ThemeSelector() {
+  const t = useTranslations()
   const [theme, setThemeState] = useState(getTheme)
 
+  const THEME_OPTIONS = [
+    { value: 'system', label: t.profile.theme.system },
+    { value: 'light', label: t.profile.theme.light },
+    { value: 'dark', label: t.profile.theme.dark },
+  ]
+
   return (
-    <Card title="Tema">
-      <div className="profile-theme">
+    <Card title={t.profile.theme.title}>
+      <div className="profile-options">
         {THEME_OPTIONS.map(({ value, label }) => (
           <Button
             key={value}
@@ -45,6 +48,38 @@ function ThemeSelector() {
   )
 }
 
+/** Seletor de idioma da interface: aplica na hora, sem precisar salvar. */
+function LanguageSelector() {
+  const t = useTranslations()
+  const [language, setLanguageState] = useState(getLanguage)
+
+  const LANGUAGE_OPTIONS = [
+    { value: 'pt', label: t.profile.language.portuguese },
+    { value: 'en', label: t.profile.language.english },
+  ]
+
+  return (
+    <Card title={t.profile.language.title}>
+      <div className="profile-options">
+        {LANGUAGE_OPTIONS.map(({ value, label }) => (
+          <Button
+            key={value}
+            type="button"
+            variant={language === value ? 'primary' : 'secondary'}
+            aria-pressed={language === value}
+            onClick={() => {
+              setLanguage(value)
+              setLanguageState(value)
+            }}
+          >
+            {label}
+          </Button>
+        ))}
+      </div>
+    </Card>
+  )
+}
+
 function describeError(fallback) {
   return (error) => ({
     variant: 'danger',
@@ -54,15 +89,16 @@ function describeError(fallback) {
 
 /** Formulário de nome e e-mail. */
 function AccountForm({ user, updateProfile }) {
+  const t = useTranslations()
   const [successMessage, setSuccessMessage] = useState(null)
 
   const submit = useCallback(
     async (values) => {
       setSuccessMessage(null)
       await updateProfile({ name: values.name, email: values.email })
-      setSuccessMessage('Dados atualizados.')
+      setSuccessMessage(t.profile.accountCard.savedMessage)
     },
-    [updateProfile],
+    [updateProfile, t],
   )
 
   const validate = useCallback(
@@ -78,17 +114,17 @@ function AccountForm({ user, updateProfile }) {
     initialValues: { name: user.name, email: user.email },
     validate,
     submit,
-    describeError: describeError('Não foi possível salvar seus dados.'),
+    describeError: describeError(t.profile.accountCard.genericError),
   })
 
   return (
-    <Card title="Conta">
+    <Card title={t.profile.accountCard.title}>
       {successMessage && <Alert variant="success">{successMessage}</Alert>}
       {generalError && <Alert variant={generalError.variant}>{generalError.message}</Alert>}
 
       <form className="profile-form" onSubmit={handleSubmit} noValidate>
         <Input
-          label="Nome"
+          label={t.profile.accountCard.nameLabel}
           name="name"
           autoComplete="name"
           value={values.name}
@@ -98,7 +134,7 @@ function AccountForm({ user, updateProfile }) {
         />
 
         <Input
-          label="E-mail"
+          label={t.profile.accountCard.emailLabel}
           type="email"
           name="email"
           autoComplete="email"
@@ -110,7 +146,7 @@ function AccountForm({ user, updateProfile }) {
 
         <div className="profile-form__actions">
           <Button type="submit" loading={submitting}>
-            {submitting ? 'Salvando...' : 'Salvar'}
+            {submitting ? t.common.saving : t.common.save}
           </Button>
         </div>
       </form>
@@ -120,6 +156,8 @@ function AccountForm({ user, updateProfile }) {
 
 /** Formulário de exclusão de conta, revelado sob demanda. */
 function DeleteAccountForm({ deleteAccount, onCancel }) {
+  const t = useTranslations()
+
   const submit = useCallback(
     async (values) => {
       await deleteAccount(values.currentPassword)
@@ -136,19 +174,16 @@ function DeleteAccountForm({ deleteAccount, onCancel }) {
     initialValues: { currentPassword: '' },
     validate,
     submit,
-    describeError: describeError('Não foi possível excluir sua conta.'),
+    describeError: describeError(t.profile.deleteAccount.genericError),
   })
 
   return (
     <form className="profile-form" onSubmit={handleSubmit} noValidate>
-      <Alert variant="warning">
-        Esta ação exclui sua conta e todos os seus baralhos e cards, sem
-        volta.
-      </Alert>
+      <Alert variant="warning">{t.profile.deleteAccount.warning}</Alert>
       {generalError && <Alert variant={generalError.variant}>{generalError.message}</Alert>}
 
       <Input
-        label="Senha atual"
+        label={t.profile.deleteAccount.currentPasswordLabel}
         type="password"
         name="currentPassword"
         autoComplete="current-password"
@@ -160,10 +195,10 @@ function DeleteAccountForm({ deleteAccount, onCancel }) {
 
       <div className="profile-form__actions">
         <Button variant="ghost" type="button" disabled={submitting} onClick={onCancel}>
-          Cancelar
+          {t.common.cancel}
         </Button>
         <Button variant="danger" type="submit" loading={submitting}>
-          {submitting ? 'Excluindo...' : 'Excluir conta'}
+          {submitting ? t.profile.deleteAccount.deleting : t.profile.deleteAccount.deleteButton}
         </Button>
       </div>
     </form>
@@ -172,6 +207,8 @@ function DeleteAccountForm({ deleteAccount, onCancel }) {
 
 /** Formulário de troca de senha, revelado sob demanda. */
 function PasswordForm({ updateProfile, onDone, onCancel }) {
+  const t = useTranslations()
+
   const submit = useCallback(
     async (values) => {
       await updateProfile({ password: values.password, currentPassword: values.currentPassword })
@@ -193,7 +230,7 @@ function PasswordForm({ updateProfile, onDone, onCancel }) {
     initialValues: { currentPassword: '', password: '' },
     validate,
     submit,
-    describeError: describeError('Não foi possível trocar a senha.'),
+    describeError: describeError(t.profile.password.genericError),
   })
 
   return (
@@ -201,7 +238,7 @@ function PasswordForm({ updateProfile, onDone, onCancel }) {
       {generalError && <Alert variant={generalError.variant}>{generalError.message}</Alert>}
 
       <Input
-        label="Senha atual"
+        label={t.profile.password.currentPasswordLabel}
         type="password"
         name="currentPassword"
         autoComplete="current-password"
@@ -212,11 +249,11 @@ function PasswordForm({ updateProfile, onDone, onCancel }) {
       />
 
       <Input
-        label="Nova senha"
+        label={t.profile.password.newPasswordLabel}
         type="password"
         name="password"
         autoComplete="new-password"
-        help="Ao menos 8 caracteres."
+        help={t.profile.password.newPasswordHelp}
         value={values.password}
         onChange={change('password')}
         error={fieldErrors.password}
@@ -225,10 +262,10 @@ function PasswordForm({ updateProfile, onDone, onCancel }) {
 
       <div className="profile-form__actions">
         <Button variant="ghost" type="button" disabled={submitting} onClick={onCancel}>
-          Cancelar
+          {t.common.cancel}
         </Button>
         <Button type="submit" loading={submitting}>
-          {submitting ? 'Salvando...' : 'Salvar senha'}
+          {submitting ? t.common.saving : t.profile.password.saveButton}
         </Button>
       </div>
     </form>
@@ -238,6 +275,7 @@ function PasswordForm({ updateProfile, onDone, onCancel }) {
 /** Tela de perfil: editar nome/e-mail, trocar a senha, excluir a conta. */
 export default function ProfilePage() {
   const { user, updateProfile, deleteAccount } = useAuth()
+  const t = useTranslations()
   const [changingPassword, setChangingPassword] = useState(false)
   const [passwordSuccess, setPasswordSuccess] = useState(null)
   const [deletingAccount, setDeletingAccount] = useState(false)
@@ -248,7 +286,9 @@ export default function ProfilePage() {
 
       <ThemeSelector />
 
-      <Card title="Senha">
+      <LanguageSelector />
+
+      <Card title={t.profile.password.cardTitle}>
         {passwordSuccess && !changingPassword && <Alert variant="success">{passwordSuccess}</Alert>}
 
         {changingPassword ? (
@@ -256,7 +296,7 @@ export default function ProfilePage() {
             updateProfile={updateProfile}
             onDone={() => {
               setChangingPassword(false)
-              setPasswordSuccess('Senha alterada.')
+              setPasswordSuccess(t.profile.password.changedMessage)
             }}
             onCancel={() => setChangingPassword(false)}
           />
@@ -268,17 +308,17 @@ export default function ProfilePage() {
               setChangingPassword(true)
             }}
           >
-            Trocar senha
+            {t.profile.password.changeButton}
           </Button>
         )}
       </Card>
 
-      <Card title="Dados">
+      <Card title={t.profile.deleteAccount.cardTitle}>
         {deletingAccount ? (
           <DeleteAccountForm deleteAccount={deleteAccount} onCancel={() => setDeletingAccount(false)} />
         ) : (
           <Button variant="danger" onClick={() => setDeletingAccount(true)}>
-            Excluir conta
+            {t.profile.deleteAccount.deleteButton}
           </Button>
         )}
       </Card>

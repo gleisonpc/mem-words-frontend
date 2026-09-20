@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import useTranslations from '../i18n/useTranslations'
 import {
   Alert,
   Badge,
@@ -11,28 +12,6 @@ import {
   Spinner,
 } from './ui'
 import './Gallery.css'
-
-/** Tokens semânticos exibidos na paleta, na ordem em que fazem sentido lidos. */
-const SWATCHES = [
-  ['--color-bg', 'fundo da página'],
-  ['--color-surface', 'superfície'],
-  ['--color-surface-muted', 'superfície suave'],
-  ['--color-border', 'divisória'],
-  ['--color-border-strong', 'borda de campo'],
-  ['--color-text', 'texto'],
-  ['--color-text-muted', 'texto suave'],
-  ['--color-primary', 'ação primária'],
-  ['--color-primary-hover', 'ação primária (hover)'],
-  ['--color-on-primary', 'sobre ação primária'],
-  ['--color-success', 'sucesso'],
-  ['--color-success-bg', 'fundo de sucesso'],
-  ['--color-warning', 'atenção'],
-  ['--color-warning-bg', 'fundo de atenção'],
-  ['--color-danger', 'perigo'],
-  ['--color-danger-bg', 'fundo de perigo'],
-  ['--color-info', 'informação'],
-  ['--color-info-bg', 'fundo de informação'],
-]
 
 const VARIANTS = ['primary', 'secondary', 'ghost', 'danger']
 const STATES = ['neutral', 'success', 'warning', 'danger', 'info']
@@ -50,27 +29,43 @@ function Section({ id, title, description, children }) {
 }
 
 export default function Gallery() {
+  const t = useTranslations()
   const [cliques, setCliques] = useState(0)
   const [progresso, setProgresso] = useState(40)
   const [pagina, setPagina] = useState(1)
 
+  /** Tokens semânticos exibidos na paleta, na ordem em que fazem sentido lidos. */
+  const swatches = [
+    ['--color-bg', t.gallery.palette.roles.bg],
+    ['--color-surface', t.gallery.palette.roles.surface],
+    ['--color-surface-muted', t.gallery.palette.roles.surfaceMuted],
+    ['--color-border', t.gallery.palette.roles.border],
+    ['--color-border-strong', t.gallery.palette.roles.borderStrong],
+    ['--color-text', t.gallery.palette.roles.text],
+    ['--color-text-muted', t.gallery.palette.roles.textMuted],
+    ['--color-primary', t.gallery.palette.roles.primary],
+    ['--color-primary-hover', t.gallery.palette.roles.primaryHover],
+    ['--color-on-primary', t.gallery.palette.roles.onPrimary],
+    ['--color-success', t.gallery.palette.roles.success],
+    ['--color-success-bg', t.gallery.palette.roles.successBg],
+    ['--color-warning', t.gallery.palette.roles.warning],
+    ['--color-warning-bg', t.gallery.palette.roles.warningBg],
+    ['--color-danger', t.gallery.palette.roles.danger],
+    ['--color-danger-bg', t.gallery.palette.roles.dangerBg],
+    ['--color-info', t.gallery.palette.roles.info],
+    ['--color-info-bg', t.gallery.palette.roles.infoBg],
+  ]
+
   return (
     <main className="gal">
       <header className="gal-header">
-        <h1>Design system</h1>
-        <p>
-          Referência viva dos tokens e componentes do mem-words. Um componente que
-          não aparece aqui é considerado incompleto.
-        </p>
+        <h1>{t.gallery.title}</h1>
+        <p>{t.gallery.intro}</p>
       </header>
 
-      <Section
-        id="paleta"
-        title="Paleta"
-        description="Tokens semânticos. Os valores mudam entre os temas claro e escuro; os nomes, não."
-      >
+      <Section id="paleta" title={t.gallery.palette.title} description={t.gallery.palette.description}>
         <ul className="gal-swatches">
-          {SWATCHES.map(([token, papel]) => (
+          {swatches.map(([token, papel]) => (
             <li className="gal-swatch" key={token}>
               <span className="gal-swatch__chip" style={{ background: `var(${token})` }} />
               <span className="gal-swatch__text">
@@ -82,11 +77,7 @@ export default function Gallery() {
         </ul>
       </Section>
 
-      <Section
-        id="botoes"
-        title="Botão"
-        description="Quatro variantes em dois tamanhos. A variante de perigo carrega um ícone de alerta, para não depender só da cor."
-      >
+      <Section id="botoes" title={t.gallery.buttons.title} description={t.gallery.buttons.description}>
         <div className="gal-row">
           {VARIANTS.map((v) => (
             <Button key={v} variant={v}>
@@ -97,75 +88,77 @@ export default function Gallery() {
         <div className="gal-row">
           {VARIANTS.map((v) => (
             <Button key={v} variant={v} size="sm">
-              {v} pequeno
+              {t.gallery.buttons.small(v)}
             </Button>
           ))}
         </div>
         <div className="gal-row">
-          <Button disabled>desabilitado</Button>
+          <Button disabled>{t.gallery.buttons.disabled}</Button>
           <Button variant="secondary" disabled>
-            desabilitado
+            {t.gallery.buttons.disabled}
           </Button>
-          <Button loading>carregando</Button>
+          <Button loading>{t.gallery.buttons.loading}</Button>
           <Button variant="secondary" loading>
-            carregando
+            {t.gallery.buttons.loading}
           </Button>
         </div>
       </Section>
 
       <Section
         id="botao-carregando"
-        title="Botão carregando não dispara"
-        description="Os dois botões usam o mesmo manipulador. Só o que não está carregando incrementa a contagem."
+        title={t.gallery.loadingButton.title}
+        description={t.gallery.loadingButton.description}
       >
         <div className="gal-row">
-          <Button onClick={() => setCliques((n) => n + 1)}>Contar clique</Button>
+          <Button onClick={() => setCliques((n) => n + 1)}>{t.gallery.loadingButton.countClick}</Button>
           <Button loading onClick={() => setCliques((n) => n + 1)}>
-            Contar clique (carregando)
+            {t.gallery.loadingButton.countClickLoading}
           </Button>
           <output className="gal-output">
-            cliques contados: <strong>{cliques}</strong>
+            {t.gallery.loadingButton.clicksCounted} <strong>{cliques}</strong>
           </output>
         </div>
       </Section>
 
-      <Section id="campos" title="Campo de entrada">
+      <Section id="campos" title={t.gallery.fields.title}>
         <div className="gal-grid">
-          <Input label="Palavra" placeholder="ex.: serendipity" />
+          <Input label={t.gallery.fields.wordLabel} placeholder={t.gallery.fields.wordPlaceholder} />
           <Input
-            label="Tradução"
-            placeholder="ex.: serendipidade"
-            help="Use a tradução que fizer mais sentido para você."
+            label={t.gallery.fields.translationLabel}
+            placeholder={t.gallery.fields.translationPlaceholder}
+            help={t.gallery.fields.translationHelp}
           />
           <Input
-            label="Palavra"
+            label={t.gallery.fields.wordLabel}
             defaultValue=""
-            error="Informe a palavra que deseja memorizar."
+            error={t.gallery.fields.wordError}
           />
-          <Input label="Idioma" value="inglês" disabled readOnly />
+          <Input
+            label={t.gallery.fields.languageLabel}
+            value={t.gallery.fields.languageValue}
+            disabled
+            readOnly
+          />
         </div>
       </Section>
 
-      <Section id="cartoes" title="Cartão">
-        <Card title="Título do cartão">
-          <p className="gal-text">
-            Cartões agrupam conteúdo relacionado sobre uma superfície distinta do
-            fundo da página.
-          </p>
+      <Section id="cartoes" title={t.gallery.cards.title}>
+        <Card title={t.gallery.cards.basicTitle}>
+          <p className="gal-text">{t.gallery.cards.basicBody}</p>
         </Card>
         <Card
-          title="Com ações"
+          title={t.gallery.cards.withActionsTitle}
           actions={
             <Button size="sm" variant="ghost">
-              Ação
+              {t.gallery.cards.withActionsAction}
             </Button>
           }
         >
-          <p className="gal-text">O cabeçalho aceita ações à direita do título.</p>
+          <p className="gal-text">{t.gallery.cards.withActionsBody}</p>
         </Card>
       </Section>
 
-      <Section id="selos" title="Selo de estado">
+      <Section id="selos" title={t.gallery.badges.title}>
         <div className="gal-row">
           {STATES.map((v) => (
             <Badge key={v} variant={v}>
@@ -175,37 +168,34 @@ export default function Gallery() {
         </div>
       </Section>
 
-      <Section id="alertas" title="Alerta">
-        <Alert variant="success" title="Salvo">
-          Sua lista de palavras foi salva.
+      <Section id="alertas" title={t.gallery.alerts.title}>
+        <Alert variant="success" title={t.gallery.alerts.savedTitle}>
+          {t.gallery.alerts.savedBody}
         </Alert>
-        <Alert variant="info">Revise 12 palavras hoje para manter o ritmo.</Alert>
-        <Alert variant="warning" title="Sessão longa">
-          Você está estudando há 45 minutos. Uma pausa ajuda a fixar.
+        <Alert variant="info">{t.gallery.alerts.infoBody}</Alert>
+        <Alert variant="warning" title={t.gallery.alerts.longSessionTitle}>
+          {t.gallery.alerts.longSessionBody}
         </Alert>
-        <Alert variant="danger" title="Falha ao salvar">
-          Não foi possível salvar a lista. Tente novamente.
+        <Alert variant="danger" title={t.gallery.alerts.saveFailedTitle}>
+          {t.gallery.alerts.saveFailedBody}
         </Alert>
       </Section>
 
-      <Section id="carregamento" title="Indicador de carregamento">
+      <Section id="carregamento" title={t.gallery.loadingIndicator.title}>
         <div className="gal-row gal-row--center">
           <Spinner size="sm" />
           <Spinner size="md" />
           <Spinner size="lg" />
-          <span className="gal-text">
-            O rótulo é texto real, escondido visualmente — o estado não depende de
-            ver a animação.
-          </span>
+          <span className="gal-text">{t.gallery.loadingIndicator.description}</span>
         </div>
       </Section>
 
       <Section
         id="progresso"
-        title="Barra de progresso"
-        description="Valores fora do intervalo são limitados: a barra nunca transborda."
+        title={t.gallery.progress.title}
+        description={t.gallery.progress.description}
       >
-        <ProgressBar label="Progresso da sessão" value={progresso} showValue />
+        <ProgressBar label={t.gallery.progress.sessionLabel} value={progresso} showValue />
         <div className="gal-row">
           <Button size="sm" variant="secondary" onClick={() => setProgresso((p) => p - 30)}>
             −30
@@ -214,27 +204,27 @@ export default function Gallery() {
             +30
           </Button>
           <output className="gal-output">
-            valor bruto: <strong>{progresso}</strong>
+            {t.gallery.progress.rawValue} <strong>{progresso}</strong>
           </output>
         </div>
-        <ProgressBar label="Valor abaixo do mínimo (−50)" value={-50} showValue />
-        <ProgressBar label="Valor acima do máximo (150)" value={150} showValue />
+        <ProgressBar label={t.gallery.progress.belowMin} value={-50} showValue />
+        <ProgressBar label={t.gallery.progress.aboveMax} value={150} showValue />
       </Section>
 
       <Section
         id="paginacao"
-        title="Paginação"
-        description="Só anterior/próxima — os botões desabilitam nas pontas."
+        title={t.gallery.pagination.title}
+        description={t.gallery.pagination.description}
       >
         <Pagination page={pagina} pageSize={10} total={42} onChange={setPagina} />
       </Section>
 
       <Section
         id="excluir"
-        title="Confirmação de exclusão"
-        description="Sem modal: o primeiro clique troca o botão por confirmar/cancelar."
+        title={t.gallery.deleteConfirm.title}
+        description={t.gallery.deleteConfirm.description}
       >
-        <ConfirmDeleteButton onConfirm={() => {}}>Excluir baralho</ConfirmDeleteButton>
+        <ConfirmDeleteButton onConfirm={() => {}}>{t.gallery.deleteConfirm.deleteDeck}</ConfirmDeleteButton>
       </Section>
     </main>
   )
