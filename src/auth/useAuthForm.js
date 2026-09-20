@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import ApiError from '../api/ApiError'
+import { getTranslations } from '../i18n/useTranslations'
 
 /**
  * Estado comum às telas de entrada e de cadastro: valores, erro por campo,
@@ -9,15 +10,12 @@ import ApiError from '../api/ApiError'
  * formulário é a mesma nas duas telas — e será a mesma na próxima.
  */
 
-/** Mensagem de último recurso, quando nem um `ApiError` chegou. */
-const UNKNOWN = 'Não foi possível concluir a operação. Tente novamente.'
-
 function defaultDescribeError(error) {
   if (error instanceof ApiError) {
     return { variant: 'danger', message: error.message }
   }
 
-  return { variant: 'danger', message: UNKNOWN }
+  return { variant: 'danger', message: getTranslations().auth.form.unknownError }
 }
 
 export default function useAuthForm({ initialValues, validate, submit, describeError }) {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import ApiError from '../api/ApiError'
 import * as authApi from '../api/auth'
 import * as usersApi from '../api/users'
+import { getTranslations } from '../i18n/useTranslations'
 import { ANONYMOUS, AUTHENTICATED, AccountCreatedError, AuthContext, DETERMINING } from './session'
 import * as tokenStore from './tokenStore'
 
@@ -47,9 +48,15 @@ export function AuthProvider({ children }) {
         if (reason === tokenStore.LOGOUT) {
           setNotice(null)
         } else if (reason === tokenStore.ACCOUNT_DELETED) {
-          setNotice({ variant: 'success', message: 'Sua conta foi excluída.' })
+          setNotice({
+            variant: 'success',
+            message: getTranslations().auth.session.accountDeleted,
+          })
         } else {
-          setNotice({ variant: 'warning', message: 'Sua sessão expirou. Entre novamente.' })
+          setNotice({
+            variant: 'warning',
+            message: getTranslations().auth.session.sessionExpired,
+          })
         }
       }),
     [],
@@ -91,7 +98,7 @@ export function AuthProvider({ children }) {
           setState({ status: ANONYMOUS, user: null, signedOut: false })
           setNotice({
             variant: 'danger',
-            message: `Não foi possível confirmar sua sessão: ${error.message}`,
+            message: getTranslations().auth.session.confirmFailed(error.message),
           })
           return
         }

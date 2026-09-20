@@ -7,6 +7,7 @@ import useAuth from '../auth/useAuth'
 import useAuthForm from '../auth/useAuthForm'
 import { collect } from '../auth/validation'
 import { Alert, Badge, Button, Card, Input, Spinner } from '../components/ui'
+import useTranslations, { getTranslations } from '../i18n/useTranslations'
 import './HomePage.css'
 
 const NAME_MAX = 120
@@ -16,13 +17,14 @@ const SECONDS_PER_CARD = 20
 
 function validateName(value) {
   const name = value.trim()
+  const { validation } = getTranslations().home
 
   if (name === '') {
-    return 'Informe o nome do baralho.'
+    return validation.nameRequired
   }
 
   if (name.length > NAME_MAX) {
-    return `O nome deve ter no máximo ${NAME_MAX} caracteres.`
+    return validation.nameMax(NAME_MAX)
   }
 
   return null
@@ -30,12 +32,7 @@ function validateName(value) {
 
 function validateLanguage(value) {
   const language = value.trim()
-
-  if (language === '') {
-    return 'Informe o idioma.'
-  }
-
-  return null
+  return language === '' ? getTranslations().home.validation.languageRequired : null
 }
 
 function validate(values) {
@@ -47,12 +44,15 @@ function validate(values) {
 }
 
 function describeError(error) {
-  const message = error instanceof ApiError ? error.message : 'Não foi possível criar o baralho.'
+  const message =
+    error instanceof ApiError ? error.message : getTranslations().home.createDeckForm.genericError
   return { variant: 'danger', message }
 }
 
 /** Formulário de criação de um baralho novo, revelado sob demanda. */
 function CreateDeckForm({ onCreated, onCancel }) {
+  const t = useTranslations()
+
   const submit = useCallback(
     async (values) => {
       const deck = await createDeck(values)
@@ -69,12 +69,12 @@ function CreateDeckForm({ onCreated, onCancel }) {
   })
 
   return (
-    <Card title="Novo baralho">
+    <Card title={t.home.createDeckForm.title}>
       {generalError && <Alert variant={generalError.variant}>{generalError.message}</Alert>}
 
       <form className="deck-form" onSubmit={handleSubmit} noValidate>
         <Input
-          label="Nome"
+          label={t.home.createDeckForm.nameLabel}
           name="name"
           autoComplete="off"
           value={values.name}
@@ -84,9 +84,9 @@ function CreateDeckForm({ onCreated, onCancel }) {
         />
 
         <Input
-          label="Idioma de origem"
+          label={t.home.createDeckForm.sourceLanguageLabel}
           name="sourceLanguage"
-          placeholder="ex.: pt-br"
+          placeholder={t.home.createDeckForm.sourceLanguagePlaceholder}
           autoComplete="off"
           value={values.sourceLanguage}
           onChange={change('sourceLanguage')}
@@ -95,9 +95,9 @@ function CreateDeckForm({ onCreated, onCancel }) {
         />
 
         <Input
-          label="Idioma de destino"
+          label={t.home.createDeckForm.targetLanguageLabel}
           name="targetLanguage"
-          placeholder="ex.: en"
+          placeholder={t.home.createDeckForm.targetLanguagePlaceholder}
           autoComplete="off"
           value={values.targetLanguage}
           onChange={change('targetLanguage')}
@@ -107,10 +107,10 @@ function CreateDeckForm({ onCreated, onCancel }) {
 
         <div className="deck-form__actions">
           <Button variant="ghost" type="button" disabled={submitting} onClick={onCancel}>
-            Cancelar
+            {t.common.cancel}
           </Button>
           <Button type="submit" loading={submitting}>
-            {submitting ? 'Criando...' : 'Criar baralho'}
+            {submitting ? t.home.createDeckForm.creating : t.home.createDeckForm.submit}
           </Button>
         </div>
       </form>
@@ -120,26 +120,29 @@ function CreateDeckForm({ onCreated, onCancel }) {
 
 /** Selo de quantos cards estão prontos para revisão agora, ou "em dia". */
 function DueBadge({ dueCount }) {
+  const t = useTranslations()
+
   if (dueCount > 0) {
-    return <Badge variant="warning">{dueCount} hoje</Badge>
+    return <Badge variant="warning">{t.home.dueBadge.dueToday(dueCount)}</Badge>
   }
 
-  return <Badge variant="success">em dia</Badge>
+  return <Badge variant="success">{t.home.dueBadge.upToDate}</Badge>
 }
 
 /** "Bom dia"/"Boa tarde"/"Boa noite" conforme o horário local. */
 function greeting(now) {
   const hour = now.getHours()
+  const { home } = getTranslations()
 
   if (hour < 12) {
-    return 'Bom dia'
+    return home.greetingMorning
   }
 
   if (hour < 18) {
-    return 'Boa tarde'
+    return home.greetingAfternoon
   }
 
-  return 'Boa noite'
+  return home.greetingEvening
 }
 
 function firstName(name) {
@@ -195,11 +198,13 @@ function DueComposition({ newCount, learningCount, reviewCount }) {
  * começar a revisar e adicionar uma palavra.
  */
 function TodaySummaryCard({ status, today, nextReviewDeck, decks, onAddWord }) {
+  const t = useTranslations()
+
   if (status === 'loading') {
     return (
-      <Card title="Revisão de hoje">
+      <Card title={t.home.todaySummary.title}>
         <div className="home__today-loading">
-          <Spinner label="Carregando revisão de hoje..." />
+          <Spinner label={t.home.todaySummary.loading} />
         </div>
       </Card>
     )
@@ -207,8 +212,8 @@ function TodaySummaryCard({ status, today, nextReviewDeck, decks, onAddWord }) {
 
   if (status === 'error') {
     return (
-      <Card title="Revisão de hoje">
-        <Alert variant="danger">Não foi possível carregar o resumo de hoje.</Alert>
+      <Card title={t.home.todaySummary.title}>
+        <Alert variant="danger">{t.home.todaySummary.loadError}</Alert>
       </Card>
     )
   }
@@ -216,22 +221,30 @@ function TodaySummaryCard({ status, today, nextReviewDeck, decks, onAddWord }) {
   const dueCount = today.dueCount ?? 0
 
   return (
-    <Card title="Revisão de hoje">
+    <Card title={t.home.todaySummary.title}>
       {dueCount === 0 ? (
-        <p className="home__today-empty">Nada pronto para revisão agora. Volte mais tarde.</p>
+        <p className="home__today-empty">{t.home.todaySummary.empty}</p>
       ) : (
         <>
           <div className="home__today-header">
-            <span className="home__today-count">{dueCount} cards</span>
-            <span className="home__today-estimate">≈ {estimateMinutes(dueCount)} min</span>
+            <span className="home__today-count">{t.home.todaySummary.cardsCount(dueCount)}</span>
+            <span className="home__today-estimate">
+              {t.home.todaySummary.estimateMinutes(estimateMinutes(dueCount))}
+            </span>
           </div>
 
           <div className="home__today-badges">
-            {today.newCount > 0 && <Badge variant="info">{today.newCount} novos</Badge>}
-            {today.learningCount > 0 && (
-              <Badge variant="warning">{today.learningCount} aprendendo</Badge>
+            {today.newCount > 0 && (
+              <Badge variant="info">{t.home.todaySummary.newBadge(today.newCount)}</Badge>
             )}
-            {today.reviewCount > 0 && <Badge variant="neutral">{today.reviewCount} revisão</Badge>}
+            {today.learningCount > 0 && (
+              <Badge variant="warning">
+                {t.home.todaySummary.learningBadge(today.learningCount)}
+              </Badge>
+            )}
+            {today.reviewCount > 0 && (
+              <Badge variant="neutral">{t.home.todaySummary.reviewBadge(today.reviewCount)}</Badge>
+            )}
           </div>
 
           <DueComposition
@@ -248,15 +261,15 @@ function TodaySummaryCard({ status, today, nextReviewDeck, decks, onAddWord }) {
             className="ms-button ms-button--primary ms-button--md"
             to={`/baralhos/${nextReviewDeck.id}/revisar`}
           >
-            Começar revisão
+            {t.home.todaySummary.startReview}
           </Link>
         ) : (
-          <Button disabled>Começar revisão</Button>
+          <Button disabled>{t.home.todaySummary.startReview}</Button>
         )}
 
         {decks.length > 0 && (
           <Button variant="secondary" onClick={onAddWord}>
-            Adicionar palavra
+            {t.home.todaySummary.addWord}
           </Button>
         )}
       </div>
@@ -266,9 +279,11 @@ function TodaySummaryCard({ status, today, nextReviewDeck, decks, onAddWord }) {
 
 /** Seletor de baralho para "Adicionar palavra", quando há mais de um. */
 function DeckPicker({ decks, onClose }) {
+  const t = useTranslations()
+
   return (
     <div className="home__deck-picker">
-      <p className="home__deck-picker-title">Em qual baralho?</p>
+      <p className="home__deck-picker-title">{t.home.deckPicker.title}</p>
       <ul className="home__deck-picker-list">
         {decks.map((deck) => (
           <li key={deck.id}>
@@ -277,7 +292,7 @@ function DeckPicker({ decks, onClose }) {
         ))}
       </ul>
       <Button variant="ghost" size="sm" onClick={onClose}>
-        Cancelar
+        {t.common.cancel}
       </Button>
     </div>
   )
@@ -289,6 +304,7 @@ function DeckPicker({ decks, onClose }) {
  * baralho. A maturidade de cada baralho fica só na tela de detalhe.
  */
 function DeckRow({ deck }) {
+  const t = useTranslations()
   const cardCount = deck.cardCount ?? 0
   const dueCount = deck.dueCount ?? 0
 
@@ -297,8 +313,7 @@ function DeckRow({ deck }) {
       <Link className="home__deck-row-main" to={`/baralhos/${deck.id}`}>
         <span className="home__deck-name">{deck.name}</span>
         <p className="home__deck-meta">
-          {cardCount} {cardCount === 1 ? 'card' : 'cards'} · {deck.sourceLanguage} →{' '}
-          {deck.targetLanguage}
+          {t.home.deckList.cardCount(cardCount)} · {deck.sourceLanguage} → {deck.targetLanguage}
         </p>
       </Link>
 
@@ -309,11 +324,11 @@ function DeckRow({ deck }) {
             className="ms-button ms-button--ghost ms-button--sm"
             to={`/baralhos/${deck.id}/revisar`}
           >
-            Revisar
+            {t.home.deckList.review}
           </Link>
         ) : (
           <Button variant="ghost" size="sm" disabled>
-            Revisar
+            {t.home.deckList.review}
           </Button>
         )}
       </div>
@@ -324,6 +339,7 @@ function DeckRow({ deck }) {
 /** Tela inicial da área autenticada: painel do dia e os baralhos do usuário. */
 export default function HomePage() {
   const { user } = useAuth()
+  const t = useTranslations()
   const navigate = useNavigate()
   const [status, setStatus] = useState('loading')
   const [decks, setDecks] = useState([])
@@ -343,10 +359,10 @@ export default function HomePage() {
       setDecks(await listDecks())
       setStatus('ok')
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Não foi possível carregar os baralhos.')
+      setError(err instanceof ApiError ? err.message : t.home.deckList.loadError)
       setStatus('error')
     }
-  }, [])
+  }, [t])
 
   const loadToday = useCallback(async () => {
     setTodayStatus('loading')
@@ -397,7 +413,7 @@ export default function HomePage() {
           {user ? `, ${firstName(user.name)}` : ''}
         </h1>
         {user && user.currentStreak > 0 && (
-          <Badge variant="success">{user.currentStreak} dias seguidos</Badge>
+          <Badge variant="success">{t.home.streakDays(user.currentStreak)}</Badge>
         )}
       </div>
 
@@ -416,13 +432,13 @@ export default function HomePage() {
       )}
 
       <div className="home__header">
-        <h2 className="home__section-title">Meus baralhos</h2>
-        <Button onClick={() => setCreating(true)}>Novo baralho</Button>
+        <h2 className="home__section-title">{t.home.deckList.title}</h2>
+        <Button onClick={() => setCreating(true)}>{t.home.deckList.newDeck}</Button>
       </div>
 
       {status === 'loading' && (
         <div className="home__loading">
-          <Spinner label="Carregando baralhos..." />
+          <Spinner label={t.home.deckList.loading} />
         </div>
       )}
 
@@ -431,7 +447,7 @@ export default function HomePage() {
       {status === 'ok' && (
         <>
           {decks.length === 0 ? (
-            <p className="home__empty">Você ainda não tem baralhos. Crie o primeiro abaixo.</p>
+            <p className="home__empty">{t.home.deckList.empty}</p>
           ) : (
             <ul className="home__deck-list">
               {decks.map((deck) => (

@@ -16,7 +16,7 @@
   gap: var(--space-2);
 }
 
-.profile-theme {
+.profile-options {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);

@@ -1,16 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { checkHealth } from '../api/health'
 import { API_URL, API_URL_SOURCE } from '../config'
+import useTranslations from '../i18n/useTranslations'
 import { Badge, Button, Card } from './ui'
 import './HealthStatus.css'
-
-// Textos preservados do comportamento anterior à refatoração: esta mudança é
-// de implementação, não de conteúdo.
-const LABELS = {
-  loading: 'Verificando conexão...',
-  ok: 'ok',
-  error: 'falha na conexão',
-}
 
 const VARIANTS = {
   loading: 'neutral',
@@ -19,6 +12,12 @@ const VARIANTS = {
 }
 
 export default function HealthStatus() {
+  const t = useTranslations()
+  const LABELS = {
+    loading: t.healthStatus.loading,
+    ok: t.healthStatus.ok,
+    error: t.healthStatus.error,
+  }
   const [status, setStatus] = useState('loading')
   const [detail, setDetail] = useState('')
 
@@ -46,23 +45,23 @@ export default function HealthStatus() {
   const carregando = status === 'loading'
 
   return (
-    <Card title="Status do backend">
+    <Card title={t.healthStatus.title}>
       <div className="health" aria-live="polite">
         <Badge variant={VARIANTS[status]}>{LABELS[status]}</Badge>
 
         {detail && <p className="health__detail">{detail}</p>}
 
         <dl className="health__meta">
-          <dt>Endpoint</dt>
+          <dt>{t.healthStatus.endpoint}</dt>
           <dd>
             <code>{API_URL}/health</code>
           </dd>
-          <dt>Origem</dt>
+          <dt>{t.healthStatus.origin}</dt>
           <dd>{API_URL_SOURCE}</dd>
         </dl>
 
         <Button variant="secondary" onClick={verify} loading={carregando}>
-          {carregando ? 'Verificando...' : 'Verificar novamente'}
+          {carregando ? t.healthStatus.verifying : t.healthStatus.verifyAgain}
         </Button>
       </div>
     </Card>

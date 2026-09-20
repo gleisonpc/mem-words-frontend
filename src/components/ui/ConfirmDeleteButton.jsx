@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import useTranslations from '../../i18n/useTranslations'
 import Button from './Button'
 import './ConfirmDeleteButton.css'
 
@@ -10,25 +11,21 @@ import './ConfirmDeleteButton.css'
  * pessoa decida ativamente. Usado para excluir baralhos e cards, as duas
  * ações do app que destroem dado sem chance de desfazer.
  */
-export default function ConfirmDeleteButton({
-  onConfirm,
-  pending = false,
-  size = 'sm',
-  children = 'Excluir',
-}) {
+export default function ConfirmDeleteButton({ onConfirm, pending = false, size = 'sm', children }) {
+  const t = useTranslations()
   const [confirming, setConfirming] = useState(false)
 
   if (!confirming) {
     return (
       <Button variant="danger" size={size} onClick={() => setConfirming(true)}>
-        {children}
+        {children ?? t.common.deleteAction}
       </Button>
     )
   }
 
   return (
     <span className="ms-confirm-delete">
-      <span className="ms-confirm-delete__label">Confirmar exclusão?</span>
+      <span className="ms-confirm-delete__label">{t.common.confirmDeleteQuestion}</span>
       <Button
         variant="danger"
         size={size}
@@ -38,10 +35,10 @@ export default function ConfirmDeleteButton({
           setConfirming(false)
         }}
       >
-        Confirmar
+        {t.common.confirm}
       </Button>
       <Button variant="ghost" size={size} disabled={pending} onClick={() => setConfirming(false)}>
-        Cancelar
+        {t.common.cancel}
       </Button>
     </span>
   )

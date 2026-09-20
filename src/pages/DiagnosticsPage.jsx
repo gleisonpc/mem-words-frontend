@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import HealthStatus from '../components/HealthStatus'
+import useTranslations from '../i18n/useTranslations'
 import './DiagnosticsPage.css'
 
 /**
@@ -10,17 +11,19 @@ import './DiagnosticsPage.css'
  * Exigir sessão a tornaria inútil exatamente quando é necessária.
  */
 export default function DiagnosticsPage() {
+  const t = useTranslations()
+
   return (
     <main className="diagnostics">
       <header className="diagnostics__header">
-        <h1>Diagnóstico</h1>
-        <p>Conexão entre este frontend e o backend do mem-words.</p>
+        <h1>{t.diagnostics.title}</h1>
+        <p>{t.diagnostics.subtitle}</p>
       </header>
 
       <HealthStatus />
 
       <p className="diagnostics__back">
-        <Link to="/entrar">Voltar para a entrada</Link>
+        <Link to="/entrar">{t.diagnostics.backToLogin}</Link>
       </p>
     </main>
   )

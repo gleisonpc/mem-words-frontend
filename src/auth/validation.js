@@ -1,3 +1,5 @@
+import { getTranslations } from '../i18n/useTranslations'
+
 /**
  * Validação no cliente, espelhando as regras que o backend aplica.
  *
@@ -18,17 +20,18 @@ export const PASSWORD_MAX = 72
 
 export function validateName(value) {
   const name = value.trim()
+  const { validation } = getTranslations().auth
 
   if (name === '') {
-    return 'Informe seu nome.'
+    return validation.nameRequired
   }
 
   if (name.length < NAME_MIN) {
-    return `O nome deve ter ao menos ${NAME_MIN} caracteres.`
+    return validation.nameMin(NAME_MIN)
   }
 
   if (name.length > NAME_MAX) {
-    return `O nome deve ter no máximo ${NAME_MAX} caracteres.`
+    return validation.nameMax(NAME_MAX)
   }
 
   return null
@@ -36,17 +39,18 @@ export function validateName(value) {
 
 export function validateEmail(value) {
   const email = value.trim()
+  const { validation } = getTranslations().auth
 
   if (email === '') {
-    return 'Informe seu e-mail.'
+    return validation.emailRequired
   }
 
   if (!EMAIL_PATTERN.test(email)) {
-    return 'E-mail inválido.'
+    return validation.emailInvalid
   }
 
   if (email.length > EMAIL_MAX) {
-    return 'E-mail muito longo.'
+    return validation.emailMax
   }
 
   return null
@@ -54,16 +58,18 @@ export function validateEmail(value) {
 
 /** Senha do cadastro: regras de tamanho do backend. */
 export function validateNewPassword(value) {
+  const { validation } = getTranslations().auth
+
   if (value === '') {
-    return 'Informe uma senha.'
+    return validation.newPasswordRequired
   }
 
   if (value.length < PASSWORD_MIN) {
-    return `A senha deve ter ao menos ${PASSWORD_MIN} caracteres.`
+    return validation.passwordMin(PASSWORD_MIN)
   }
 
   if (value.length > PASSWORD_MAX) {
-    return `A senha deve ter no máximo ${PASSWORD_MAX} caracteres.`
+    return validation.passwordMax(PASSWORD_MAX)
   }
 
   return null
@@ -76,7 +82,7 @@ export function validateNewPassword(value) {
  * real — é a mesma razão pela qual o backend também não valida força no login.
  */
 export function validateCurrentPassword(value) {
-  return value === '' ? 'Informe sua senha.' : null
+  return value === '' ? getTranslations().auth.validation.currentPasswordRequired : null
 }
 
 /** Descarta chaves sem mensagem, para que o mapa vazio signifique "válido". */

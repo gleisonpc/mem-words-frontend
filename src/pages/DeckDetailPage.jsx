@@ -16,6 +16,8 @@ import {
   Pagination,
   Spinner,
 } from '../components/ui'
+import { getLanguage, localeForLanguage } from '../i18n/language'
+import useTranslations, { getTranslations } from '../i18n/useTranslations'
 import {
   CardFields,
   cardInputFromValues,
@@ -31,47 +33,42 @@ const PAGE_SIZE = 10
 /** Debounce da busca por palavra — a primeira busca em texto contra o backend. */
 const SEARCH_DEBOUNCE_MS = 300
 
-/** Variante de `Badge` e rótulo de cada status calculado pelo backend. */
-const STATUS_BADGES = {
-  new: { variant: 'info', label: 'Novo' },
-  learning: { variant: 'warning', label: 'Aprend.' },
-  difficult: { variant: 'danger', label: 'Difícil' },
-  mature: { variant: 'success', label: 'Maduro' },
-  reviewing: { variant: 'neutral', label: 'Revisão' },
-  suspended: { variant: 'neutral', label: 'Suspenso' },
+/** Variante de `Badge` de cada status calculado pelo backend; o rótulo vem do dicionário. */
+const STATUS_VARIANTS = {
+  new: 'info',
+  learning: 'warning',
+  difficult: 'danger',
+  mature: 'success',
+  reviewing: 'neutral',
+  suspended: 'neutral',
 }
 
-const STATUS_FILTER_OPTIONS = [
-  { value: '', label: 'Todos' },
-  { value: 'new', label: 'Novo' },
-  { value: 'learning', label: 'Aprendendo' },
-  { value: 'difficult', label: 'Difícil' },
-  { value: 'mature', label: 'Maduro' },
-  { value: 'reviewing', label: 'Em revisão' },
-  { value: 'suspended', label: 'Suspenso' },
-]
-
-function statusBadge(status) {
-  return STATUS_BADGES[status] ?? { variant: 'neutral', label: status }
+function statusBadge(status, labels) {
+  return {
+    variant: STATUS_VARIANTS[status] ?? 'neutral',
+    label: labels[status] ?? status,
+  }
 }
 
 /** Rótulo curto da próxima revisão de um card — "hoje"/"amanhã"/"em Nd"/"—". */
 function formatNextReview(dueAt, now) {
+  const { nextReview } = getTranslations().deckDetail
+
   if (dueAt === null) {
-    return '—'
+    return nextReview.none
   }
 
   const diffDays = Math.ceil((new Date(dueAt).getTime() - now.getTime()) / 86_400_000)
 
   if (diffDays <= 0) {
-    return 'hoje'
+    return nextReview.today
   }
 
   if (diffDays === 1) {
-    return 'amanhã'
+    return nextReview.tomorrow
   }
 
-  return `em ${diffDays}d`
+  return nextReview.inDays(diffDays)
 }
 
 /** `ApiError` de posse/existência: o backend distingue os dois casos, a tela não. */
@@ -79,15 +76,18 @@ function isUnavailable(error) {
   return error instanceof ApiError && (error.status === 403 || error.status === 404)
 }
 
-const CREATED_MONTH_FORMAT = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' })
-
-/** "criado em <mês> de <ano>", a partir de `createdAt`. */
-function formatCreatedMonth(createdAt) {
-  return CREATED_MONTH_FORMAT.format(new Date(createdAt))
+/** "criado em <mês> de <ano>", a partir de `createdAt`, no locale do idioma ativo. */
+function formatCreatedMonth(createdAt, language) {
+  return new Intl.DateTimeFormat(localeForLanguage(language), {
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(createdAt))
 }
 
 /** Formulário de nome/idiomas — reaproveitado para editar o baralho. */
 function DeckEditForm({ deck, onSaved, onCancel }) {
+  const t = useTranslations()
+
   const submit = useCallback(
     async (values) => {
       onSaved(await updateDeck(deck.id, values))
@@ -98,11 +98,11 @@ function DeckEditForm({ deck, onSaved, onCancel }) {
   const validate = useCallback(
     (values) =>
       collect({
-        name: requiredText(values.name, 'o nome do baralho'),
-        sourceLanguage: requiredText(values.sourceLanguage, 'o idioma de origem'),
-        targetLanguage: requiredText(values.targetLanguage, 'o idioma de destino'),
+        name: requiredText(values.name, t.deckDetail.edit.nameRequiredLabel),
+        sourceLanguage: requiredText(values.sourceLanguage, t.deckDetail.edit.sourceLanguageRequiredLabel),
+        targetLanguage: requiredText(values.targetLanguage, t.deckDetail.edit.targetLanguageRequiredLabel),
       }),
-    [],
+    [t],
   )
 
   const { values, change, fieldErrors, generalError, submitting, handleSubmit } = useAuthForm({
@@ -113,7 +113,7 @@ function DeckEditForm({ deck, onSaved, onCancel }) {
     },
     validate,
     submit,
-    describeError: describeApiError('Não foi possível salvar o baralho.'),
+    describeError: describeApiError(t.deckDetail.edit.genericError),
   })
 
   return (
@@ -121,7 +121,7 @@ function DeckEditForm({ deck, onSaved, onCancel }) {
       {generalError && <Alert variant={generalError.variant}>{generalError.message}</Alert>}
 
       <Input
-        label="Nome"
+        label={t.deckDetail.edit.nameLabel}
         name="name"
         value={values.name}
         onChange={change('name')}
@@ -129,7 +129,7 @@ function DeckEditForm({ deck, onSaved, onCancel }) {
         disabled={submitting}
       />
       <Input
-        label="Idioma de origem"
+        label={t.deckDetail.edit.sourceLanguageLabel}
         name="sourceLanguage"
         value={values.sourceLanguage}
         onChange={change('sourceLanguage')}
@@ -137,7 +137,7 @@ function DeckEditForm({ deck, onSaved, onCancel }) {
         disabled={submitting}
       />
       <Input
-        label="Idioma de destino"
+        label={t.deckDetail.edit.targetLanguageLabel}
         name="targetLanguage"
         value={values.targetLanguage}
         onChange={change('targetLanguage')}
@@ -147,10 +147,10 @@ function DeckEditForm({ deck, onSaved, onCancel }) {
 
       <div className="deck-form__actions">
         <Button variant="ghost" type="button" disabled={submitting} onClick={onCancel}>
-          Cancelar
+          {t.common.cancel}
         </Button>
         <Button type="submit" loading={submitting}>
-          {submitting ? 'Salvando...' : 'Salvar'}
+          {submitting ? t.common.saving : t.common.save}
         </Button>
       </div>
     </form>
@@ -168,18 +168,21 @@ function StatTile({ label, value }) {
 
 /** Os quatro blocos de contagem por status do baralho. */
 function DeckStats({ deck }) {
+  const t = useTranslations()
+
   return (
     <div className="deck-detail__stats">
-      <StatTile label="Novos" value={deck.newCount ?? 0} />
-      <StatTile label="Aprendendo" value={deck.learningCount ?? 0} />
-      <StatTile label="Maduros" value={deck.matureCount ?? 0} />
-      <StatTile label="Suspensos" value={deck.suspendedCount ?? 0} />
+      <StatTile label={t.deckDetail.stats.new} value={deck.newCount ?? 0} />
+      <StatTile label={t.deckDetail.stats.learning} value={deck.learningCount ?? 0} />
+      <StatTile label={t.deckDetail.stats.mature} value={deck.matureCount ?? 0} />
+      <StatTile label={t.deckDetail.stats.suspended} value={deck.suspendedCount ?? 0} />
     </div>
   )
 }
 
 /** Cabeçalho do baralho: exibição, edição, exclusão e início de revisão. */
 function DeckHeader({ deck, reviewCount, onUpdated, onDeleted }) {
+  const t = useTranslations()
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState(null)
@@ -192,17 +195,15 @@ function DeckHeader({ deck, reviewCount, onUpdated, onDeleted }) {
       await deleteDeck(deck.id)
       onDeleted()
     } catch (error) {
-      setDeleteError(
-        error instanceof ApiError ? error.message : 'Não foi possível excluir o baralho.',
-      )
+      setDeleteError(error instanceof ApiError ? error.message : t.deckDetail.deleteError)
     } finally {
       setDeleting(false)
     }
-  }, [deck.id, onDeleted])
+  }, [deck.id, onDeleted, t])
 
   if (editing) {
     return (
-      <Card title="Editar baralho">
+      <Card title={t.deckDetail.edit.title}>
         <DeckEditForm
           deck={deck}
           onSaved={(updated) => {
@@ -221,10 +222,10 @@ function DeckHeader({ deck, reviewCount, onUpdated, onDeleted }) {
       actions={
         <>
           <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
-            Editar
+            {t.deckDetail.editAction}
           </Button>
           <ConfirmDeleteButton onConfirm={handleDelete} pending={deleting}>
-            Excluir baralho
+            {t.deckDetail.deleteDeck}
           </ConfirmDeleteButton>
         </>
       }
@@ -232,21 +233,22 @@ function DeckHeader({ deck, reviewCount, onUpdated, onDeleted }) {
       {deleteError && <Alert variant="danger">{deleteError}</Alert>}
 
       <p className="deck-detail__meta">
-        {deck.cardCount} {deck.cardCount === 1 ? 'card' : 'cards'} · {deck.sourceLanguage} →{' '}
-        {deck.targetLanguage} · criado em {formatCreatedMonth(deck.createdAt)}
+        {t.deckDetail.cardsCount(deck.cardCount ?? 0)} · {deck.sourceLanguage} →{' '}
+        {deck.targetLanguage} ·{' '}
+        {t.deckDetail.createdIn(formatCreatedMonth(deck.createdAt, getLanguage()))}
       </p>
 
       <div className="deck-detail__review-cta">
         {reviewCount !== null && (
           <span className="deck-detail__review-count">
-            {reviewCount} {reviewCount === 1 ? 'pronto' : 'prontos'} para revisão
+            {t.deckDetail.readyForReview(reviewCount)}
           </span>
         )}
         <Link
           to={`/baralhos/${deck.id}/revisar`}
           className="ms-button ms-button--primary ms-button--md"
         >
-          Revisar
+          {t.deckDetail.review}
         </Link>
       </div>
     </Card>
@@ -255,6 +257,8 @@ function DeckHeader({ deck, reviewCount, onUpdated, onDeleted }) {
 
 /** Formulário de edição de um card existente. */
 function CardEditForm({ card, onSaved, onCancel }) {
+  const t = useTranslations()
+
   const submit = useCallback(
     async (values) => {
       onSaved(await updateCard(card.id, cardInputFromValues(values)))
@@ -274,7 +278,7 @@ function CardEditForm({ card, onSaved, onCancel }) {
     },
     validate: cardValidate,
     submit,
-    describeError: describeApiError('Não foi possível salvar o card.'),
+    describeError: describeApiError(t.deckDetail.cardEditForm.genericError),
   })
 
   return (
@@ -285,10 +289,10 @@ function CardEditForm({ card, onSaved, onCancel }) {
 
       <div className="deck-form__actions">
         <Button variant="ghost" type="button" disabled={submitting} onClick={onCancel}>
-          Cancelar
+          {t.common.cancel}
         </Button>
         <Button type="submit" loading={submitting}>
-          {submitting ? 'Salvando...' : 'Salvar'}
+          {submitting ? t.common.saving : t.common.save}
         </Button>
       </div>
     </form>
@@ -297,6 +301,7 @@ function CardEditForm({ card, onSaved, onCancel }) {
 
 /** Um card na lista: exibição, edição, exclusão e suspensão. */
 function CardItem({ card, now, onUpdated, onDeleted, onSuspendToggled }) {
+  const t = useTranslations()
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState(null)
@@ -311,11 +316,11 @@ function CardItem({ card, now, onUpdated, onDeleted, onSuspendToggled }) {
       await deleteCard(card.id)
       await onDeleted(card.id)
     } catch (error) {
-      setDeleteError(error instanceof ApiError ? error.message : 'Não foi possível excluir o card.')
+      setDeleteError(error instanceof ApiError ? error.message : t.deckDetail.cardItem.deleteError)
     } finally {
       setDeleting(false)
     }
-  }, [card.id, onDeleted])
+  }, [card.id, onDeleted, t])
 
   const handleSuspendToggle = useCallback(async () => {
     setSuspending(true)
@@ -328,12 +333,14 @@ function CardItem({ card, now, onUpdated, onDeleted, onSuspendToggled }) {
       setSuspendError(
         error instanceof ApiError
           ? error.message
-          : `Não foi possível ${card.suspended ? 'reativar' : 'suspender'} o card.`,
+          : card.suspended
+            ? t.deckDetail.cardItem.reactivateError
+            : t.deckDetail.cardItem.suspendError,
       )
     } finally {
       setSuspending(false)
     }
-  }, [card.id, card.suspended, onSuspendToggled])
+  }, [card.id, card.suspended, onSuspendToggled, t])
 
   if (editing) {
     return (
@@ -350,7 +357,7 @@ function CardItem({ card, now, onUpdated, onDeleted, onSuspendToggled }) {
     )
   }
 
-  const badge = statusBadge(card.status)
+  const badge = statusBadge(card.status, t.deckDetail.statusBadges)
 
   return (
     <li className="deck-detail__card">
@@ -370,7 +377,7 @@ function CardItem({ card, now, onUpdated, onDeleted, onSuspendToggled }) {
 
         <div className="deck-detail__card-actions">
           <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
-            Editar
+            {t.deckDetail.cardItem.editAction}
           </Button>
           <Button
             variant="secondary"
@@ -378,7 +385,7 @@ function CardItem({ card, now, onUpdated, onDeleted, onSuspendToggled }) {
             loading={suspending}
             onClick={handleSuspendToggle}
           >
-            {card.suspended ? 'Reativar' : 'Suspender'}
+            {card.suspended ? t.deckDetail.cardItem.reactivate : t.deckDetail.cardItem.suspend}
           </Button>
           <ConfirmDeleteButton onConfirm={handleDelete} pending={deleting} />
         </div>
@@ -388,7 +395,8 @@ function CardItem({ card, now, onUpdated, onDeleted, onSuspendToggled }) {
         <p className="deck-detail__card-detail">
           {card.partOfSpeech}
           {card.partOfSpeech && card.synonyms?.length > 0 ? ' · ' : ''}
-          {card.synonyms?.length > 0 && `sinônimos: ${card.synonyms.join(', ')}`}
+          {card.synonyms?.length > 0 &&
+            t.deckDetail.cardItem.synonymsPrefix(card.synonyms.join(', '))}
         </p>
       )}
 
@@ -408,6 +416,7 @@ function CardItem({ card, now, onUpdated, onDeleted, onSuspendToggled }) {
 export default function DeckDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const t = useTranslations()
 
   const [deckStatus, setDeckStatus] = useState('loading')
   const [deck, setDeck] = useState(null)
@@ -426,6 +435,16 @@ export default function DeckDetailPage() {
   // tela, só some com a contagem (o botão de revisar continua alcançável).
   const [reviewCount, setReviewCount] = useState(null)
 
+  const statusFilterOptions = [
+    { value: '', label: t.deckDetail.statusFilterOptions.all },
+    { value: 'new', label: t.deckDetail.statusFilterOptions.new },
+    { value: 'learning', label: t.deckDetail.statusFilterOptions.learning },
+    { value: 'difficult', label: t.deckDetail.statusFilterOptions.difficult },
+    { value: 'mature', label: t.deckDetail.statusFilterOptions.mature },
+    { value: 'reviewing', label: t.deckDetail.statusFilterOptions.reviewing },
+    { value: 'suspended', label: t.deckDetail.statusFilterOptions.suspended },
+  ]
+
   const loadDeck = useCallback(async () => {
     setDeckStatus('loading')
 
@@ -435,14 +454,14 @@ export default function DeckDetailPage() {
     } catch (error) {
       setDeckError(
         isUnavailable(error)
-          ? 'Este baralho não está disponível.'
+          ? t.deckDetail.unavailable
           : error instanceof ApiError
             ? error.message
-            : 'Não foi possível carregar o baralho.',
+            : t.deckDetail.loadError,
       )
       setDeckStatus('error')
     }
-  }, [id])
+  }, [id, t])
 
   // Atualiza os campos do baralho (contagens por status) sem passar pelo
   // estado de carregamento de página inteira — usado depois de criar,
@@ -520,10 +539,10 @@ export default function DeckDetailPage() {
     return (
       <div className="deck-detail">
         <Link className="deck-detail__back" to="/">
-          ← Baralhos
+          {t.deckDetail.backToDecks}
         </Link>
         <div className="deck-detail__loading">
-          <Spinner label="Carregando baralho..." />
+          <Spinner label={t.deckDetail.loadingDeck} />
         </div>
       </div>
     )
@@ -531,10 +550,10 @@ export default function DeckDetailPage() {
 
   if (deckStatus === 'error') {
     return (
-      <Card title="Baralho indisponível">
+      <Card title={t.deckDetail.unavailableTitle}>
         <Alert variant="danger">{deckError}</Alert>
         <p>
-          <Link to="/">Voltar para os baralhos</Link>
+          <Link to="/">{t.deckDetail.backToDecksLink}</Link>
         </p>
       </Card>
     )
@@ -579,7 +598,7 @@ export default function DeckDetailPage() {
   return (
     <div className="deck-detail">
       <Link className="deck-detail__back" to="/">
-        ← Baralhos
+        {t.deckDetail.backToDecks}
       </Link>
 
       <DeckHeader
@@ -592,28 +611,28 @@ export default function DeckDetailPage() {
       <DeckStats deck={deck} />
 
       <Card
-        title="Cards"
+        title={t.deckDetail.cardsCard.title}
         actions={
           <Link
             className="ms-button ms-button--primary ms-button--sm"
             to={`/baralhos/${id}/cards/novo`}
           >
-            Adicionar card
+            {t.deckDetail.cardsCard.addCard}
           </Link>
         }
       >
         <div className="deck-detail__filters">
           <Input
-            label="Buscar palavra"
+            label={t.deckDetail.cardsCard.searchLabel}
             name="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="ex.: overwhelm"
+            placeholder={t.deckDetail.cardsCard.searchPlaceholder}
           />
 
           <div className="ms-field">
             <label className="ms-field__label" htmlFor="deck-detail-status-filter">
-              Status
+              {t.deckDetail.cardsCard.statusLabel}
             </label>
             <select
               id="deck-detail-status-filter"
@@ -621,7 +640,7 @@ export default function DeckDetailPage() {
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
             >
-              {STATUS_FILTER_OPTIONS.map((option) => (
+              {statusFilterOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -632,17 +651,19 @@ export default function DeckDetailPage() {
 
         {cardsStatus === 'loading' && (
           <div className="deck-detail__loading">
-            <Spinner label="Carregando cards..." />
+            <Spinner label={t.deckDetail.cardsCard.loading} />
           </div>
         )}
 
         {cardsStatus === 'error' && (
-          <Alert variant="danger">Não foi possível carregar os cards deste baralho.</Alert>
+          <Alert variant="danger">{t.deckDetail.cardsCard.loadError}</Alert>
         )}
 
         {cardsStatus === 'ok' && cards.length === 0 && (
           <p className="deck-detail__empty">
-            {isFiltering ? 'Nenhum card encontrado.' : 'Este baralho ainda não tem cards.'}
+            {isFiltering
+              ? t.deckDetail.cardsCard.emptyFiltered
+              : t.deckDetail.cardsCard.emptyUnfiltered}
           </p>
         )}
 

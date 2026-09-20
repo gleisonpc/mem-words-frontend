@@ -6,6 +6,7 @@ import { fetchSuggestion } from '../api/dictionaryLookup'
 import ApiError from '../api/ApiError'
 import useAuthForm from '../auth/useAuthForm'
 import { Alert, Button, Card, Spinner } from '../components/ui'
+import useTranslations from '../i18n/useTranslations'
 import { CardFields, EMPTY_CARD_VALUES, cardInputFromValues, cardValidate, describeApiError } from './cardForm'
 import './AddCardPage.css'
 
@@ -23,6 +24,7 @@ function isUnavailable(error) {
  * este caso.
  */
 function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
+  const t = useTranslations()
   const [deckId, setDeckId] = useState(urlDeckId)
   const [suggestion, setSuggestion] = useState(null)
   const [searching, setSearching] = useState(false)
@@ -50,7 +52,7 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
     initialValues: EMPTY_CARD_VALUES,
     validate: cardValidate,
     submit,
-    describeError: describeApiError('Não foi possível criar o card.'),
+    describeError: describeApiError(t.addCard.genericError),
   })
 
   const handleWordChange = (event) => {
@@ -140,35 +142,37 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
       {suggestion && (
         <Alert variant="info">
           <div className="add-card-suggestion">
-            <p className="add-card-suggestion__title">Sugestão do dicionário</p>
+            <p className="add-card-suggestion__title">{t.addCard.suggestion.title}</p>
 
             {suggestion.translation && (
               <p className="add-card-suggestion__item">
-                Tradução: <strong>{suggestion.translation}</strong>
+                {t.addCard.suggestion.translationLabel} <strong>{suggestion.translation}</strong>
               </p>
             )}
             {suggestion.exampleSentence && (
-              <p className="add-card-suggestion__item">Exemplo: “{suggestion.exampleSentence}”</p>
+              <p className="add-card-suggestion__item">
+                {t.addCard.suggestion.example(suggestion.exampleSentence)}
+              </p>
             )}
             {suggestion.exampleTranslation && (
               <p className="add-card-suggestion__item">
-                Tradução do exemplo: “{suggestion.exampleTranslation}”
+                {t.addCard.suggestion.exampleTranslation(suggestion.exampleTranslation)}
               </p>
             )}
             {suggestion.partOfSpeech && (
               <p className="add-card-suggestion__item">
-                Classe gramatical: <strong>{suggestion.partOfSpeech}</strong>
+                {t.addCard.suggestion.partOfSpeechLabel} <strong>{suggestion.partOfSpeech}</strong>
               </p>
             )}
             {suggestion.synonyms && (
               <p className="add-card-suggestion__item">
-                Sinônimos: {suggestion.synonyms.join(', ')}
+                {t.addCard.suggestion.synonyms(suggestion.synonyms.join(', '))}
               </p>
             )}
 
             <div className="add-card-suggestion__actions">
               <Button type="button" size="sm" onClick={applySuggestion}>
-                Usar sugestão
+                {t.addCard.suggestion.use}
               </Button>
               <Button
                 type="button"
@@ -176,7 +180,7 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
                 size="sm"
                 onClick={() => setSuggestion(null)}
               >
-                Descartar
+                {t.addCard.suggestion.discard}
               </Button>
             </div>
           </div>
@@ -199,19 +203,17 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
                 disabled={values.word.trim() === '' || submitting}
                 onClick={handleSearchClick}
               >
-                {searching ? 'Buscando sugestão...' : 'Buscar sugestão'}
+                {searching ? t.addCard.suggestion.searching : t.addCard.suggestion.searchButton}
               </Button>
               {searchedEmpty && (
-                <span className="add-card-search__status">
-                  Nenhuma sugestão encontrada para esta palavra.
-                </span>
+                <span className="add-card-search__status">{t.addCard.suggestion.empty}</span>
               )}
             </div>
           }
           extraField={
             <div className="ms-field">
               <label className="ms-field__label" htmlFor="add-card-deck">
-                Baralho
+                {t.addCard.deckLabel}
               </label>
               <select
                 id="add-card-deck"
@@ -240,7 +242,7 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
             submitIntent.current = 'save-and-continue'
           }}
         >
-          {submitting ? 'Salvando...' : 'Salvar e criar outra'}
+          {submitting ? t.common.saving : t.addCard.saveAndContinue}
         </Button>
         <Button
           type="submit"
@@ -249,7 +251,7 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
             submitIntent.current = 'save'
           }}
         >
-          {submitting ? 'Salvando...' : 'Salvar'}
+          {submitting ? t.common.saving : t.common.save}
         </Button>
       </div>
     </form>
@@ -260,6 +262,7 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
 export default function AddCardPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const t = useTranslations()
 
   const [deckStatus, setDeckStatus] = useState('loading')
   const [deck, setDeck] = useState(null)
@@ -276,14 +279,14 @@ export default function AddCardPage() {
     } catch (error) {
       setDeckError(
         isUnavailable(error)
-          ? 'Este baralho não está disponível.'
+          ? t.addCard.unavailable
           : error instanceof ApiError
             ? error.message
-            : 'Não foi possível carregar o baralho.',
+            : t.addCard.loadError,
       )
       setDeckStatus('error')
     }
-  }, [id])
+  }, [id, t])
 
   const loadDecks = useCallback(async () => {
     try {
@@ -315,7 +318,7 @@ export default function AddCardPage() {
 
   const backLink = (
     <Link className="deck-detail__back" to={`/baralhos/${id}`}>
-      ← Baralho
+      {t.addCard.backToDeck}
     </Link>
   )
 
@@ -324,7 +327,7 @@ export default function AddCardPage() {
       <div className="deck-detail">
         {backLink}
         <div className="deck-detail__loading">
-          <Spinner label="Carregando baralho..." />
+          <Spinner label={t.addCard.loadingDeck} />
         </div>
       </div>
     )
@@ -334,7 +337,7 @@ export default function AddCardPage() {
     return (
       <div className="deck-detail">
         {backLink}
-        <Card title="Baralho indisponível">
+        <Card title={t.addCard.unavailableTitle}>
           <Alert variant="danger">{deckError}</Alert>
         </Card>
       </div>
@@ -350,7 +353,7 @@ export default function AddCardPage() {
     <div className="deck-detail">
       {backLink}
 
-      <Card title="Novo card">
+      <Card title={t.addCard.cardTitle}>
         <AddCardForm key={formKey} urlDeckId={id} deckOptions={deckOptions} onSaved={handleSaved} />
       </Card>
     </div>

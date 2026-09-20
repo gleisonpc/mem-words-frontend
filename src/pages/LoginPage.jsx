@@ -4,6 +4,7 @@ import useAuth from '../auth/useAuth'
 import useAuthForm from '../auth/useAuthForm'
 import { collect, validateCurrentPassword, validateEmail } from '../auth/validation'
 import { Alert, Button, Input } from '../components/ui'
+import useTranslations from '../i18n/useTranslations'
 import AuthScreen from './AuthScreen'
 
 function validate(values) {
@@ -16,6 +17,7 @@ function validate(values) {
 export default function LoginPage() {
   const { signIn, notice, dismissNotice } = useAuth()
   const location = useLocation()
+  const t = useTranslations()
 
   // Não há navegação aqui: autenticado, o `GuestOnly` que envolve esta rota
   // leva ao destino pretendido — um único lugar decidindo para onde ir.
@@ -37,14 +39,14 @@ export default function LoginPage() {
 
   return (
     <AuthScreen
-      title="Entrar"
+      title={t.auth.login.title}
       footer={
         <>
-          Ainda não tem conta?{' '}
+          {t.auth.login.noAccount}{' '}
           {/* O destino pretendido viaja junto: quem foi desviado para cá e
               decide criar conta continua indo para onde queria. */}
           <Link to="/cadastro" state={location.state}>
-            Criar uma conta
+            {t.auth.login.createAccount}
           </Link>
         </>
       }
@@ -57,7 +59,7 @@ export default function LoginPage() {
 
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <Input
-          label="E-mail"
+          label={t.auth.fields.email}
           type="email"
           name="email"
           autoComplete="email"
@@ -69,7 +71,7 @@ export default function LoginPage() {
         />
 
         <Input
-          label="Senha"
+          label={t.auth.fields.password}
           type="password"
           name="password"
           autoComplete="current-password"
@@ -82,7 +84,7 @@ export default function LoginPage() {
         <div className="auth-form__actions">
           {/* `type="submit"` é o que permite enviar pelo Enter, sem clique. */}
           <Button type="submit" loading={submitting}>
-            {submitting ? 'Entrando...' : 'Entrar'}
+            {submitting ? t.auth.login.submitting : t.auth.login.submit}
           </Button>
         </div>
       </form>

@@ -1,5 +1,6 @@
 import { Link, Outlet } from 'react-router'
 import useAuth from '../auth/useAuth'
+import useTranslations from '../i18n/useTranslations'
 import { Button } from './ui'
 import './AuthenticatedLayout.css'
 
@@ -12,6 +13,7 @@ import './AuthenticatedLayout.css'
  */
 export default function AuthenticatedLayout() {
   const { user, signOut } = useAuth()
+  const t = useTranslations()
 
   return (
     <div className="shell">
@@ -29,7 +31,7 @@ export default function AuthenticatedLayout() {
           {/* Sem navegação aqui: encerrada a sessão, a guarda que envolve
               esta moldura redireciona — um único lugar decidindo. */}
           <Button variant="ghost" size="sm" onClick={signOut}>
-            Sair
+            {t.layout.signOut}
           </Button>
         </div>
       </header>

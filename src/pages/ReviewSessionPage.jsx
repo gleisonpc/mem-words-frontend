@@ -3,14 +3,8 @@ import { Link, useParams } from 'react-router'
 import { getReviewQueue, recordReview } from '../api/reviews'
 import ApiError from '../api/ApiError'
 import { Alert, Button, Card, Spinner } from '../components/ui'
+import useTranslations from '../i18n/useTranslations'
 import './ReviewSessionPage.css'
-
-const GRADES = [
-  { grade: 'again', label: 'Errei' },
-  { grade: 'hard', label: 'Difícil' },
-  { grade: 'good', label: 'Bom' },
-  { grade: 'easy', label: 'Fácil' },
-]
 
 /** `ApiError` de posse/existência: o backend distingue os dois casos, a tela não. */
 function isUnavailable(error) {
@@ -21,25 +15,32 @@ function isUnavailable(error) {
  * Rótulo curto da prévia de uma nota — só o suficiente para os quatro
  * botões, não um formatador de datas genérico.
  */
-function formatDueIn(dueAt, now) {
+function formatDueIn(dueAt, now, t) {
   const diffMinutes = (new Date(dueAt).getTime() - now.getTime()) / 60_000
 
   if (Math.round(diffMinutes) <= 0) {
-    return 'agora'
+    return t.review.dueIn.now
   }
 
   if (diffMinutes < 60 * 24) {
-    const minutes = Math.round(diffMinutes)
-    return `em ${minutes} min`
+    return t.review.dueIn.minutes(Math.round(diffMinutes))
   }
 
   const days = Math.round(diffMinutes / (60 * 24))
-  return `em ${days} dia${days === 1 ? '' : 's'}`
+  return t.review.dueIn.days(days)
 }
 
 /** Tela de sessão de revisão: percorre a fila de um baralho, um card por vez. */
 export default function ReviewSessionPage() {
   const { id } = useParams()
+  const t = useTranslations()
+
+  const GRADES = [
+    { grade: 'again', label: t.review.grades.again },
+    { grade: 'hard', label: t.review.grades.hard },
+    { grade: 'good', label: t.review.grades.good },
+    { grade: 'easy', label: t.review.grades.easy },
+  ]
 
   const [status, setStatus] = useState('loading')
   const [error, setError] = useState(null)
@@ -61,14 +62,14 @@ export default function ReviewSessionPage() {
     } catch (err) {
       setError(
         isUnavailable(err)
-          ? 'Este baralho não está disponível.'
+          ? t.review.unavailable
           : err instanceof ApiError
             ? err.message
-            : 'Não foi possível carregar a fila de revisão.',
+            : t.review.loadError,
       )
       setStatus('error')
     }
-  }, [id])
+  }, [id, t])
 
   useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect
@@ -93,22 +94,20 @@ export default function ReviewSessionPage() {
         }
       } catch (err) {
         setSubmittingGrade(null)
-        setSubmitError(
-          err instanceof ApiError ? err.message : 'Não foi possível registrar a nota.',
-        )
+        setSubmitError(err instanceof ApiError ? err.message : t.review.submitError)
       }
     },
-    [index, queue],
+    [index, queue, t],
   )
 
   if (status === 'loading') {
     return (
       <div className="review-session">
         <Link className="review-session__back" to={`/baralhos/${id}`}>
-          Encerrar
+          {t.review.end}
         </Link>
         <div className="review-session__loading">
-          <Spinner label="Carregando sessão de revisão..." />
+          <Spinner label={t.review.loading} />
         </div>
       </div>
     )
@@ -116,10 +115,10 @@ export default function ReviewSessionPage() {
 
   if (status === 'error') {
     return (
-      <Card title="Revisão indisponível">
+      <Card title={t.review.unavailableTitle}>
         <Alert variant="danger">{error}</Alert>
         <p>
-          <Link to={`/baralhos/${id}`}>Voltar para o baralho</Link>
+          <Link to={`/baralhos/${id}`}>{t.review.backToDeck}</Link>
         </p>
       </Card>
     )
@@ -127,14 +126,10 @@ export default function ReviewSessionPage() {
 
   if (status === 'empty' || status === 'done') {
     return (
-      <Card title={status === 'done' ? 'Sessão concluída' : 'Nada para revisar agora'}>
+      <Card title={status === 'done' ? t.review.doneTitle : t.review.emptyTitle}>
+        <p>{status === 'done' ? t.review.doneBody : t.review.emptyBody}</p>
         <p>
-          {status === 'done'
-            ? 'Você revisou todos os cards prontos deste baralho.'
-            : 'Este baralho não tem cards prontos para revisão agora.'}
-        </p>
-        <p>
-          <Link to={`/baralhos/${id}`}>Voltar para o baralho</Link>
+          <Link to={`/baralhos/${id}`}>{t.review.backToDeck}</Link>
         </p>
       </Card>
     )
@@ -145,10 +140,10 @@ export default function ReviewSessionPage() {
 
   return (
     <Card
-      title={`Revisão — ${index + 1} de ${queue.length}`}
+      title={t.review.progressTitle(index + 1, queue.length)}
       actions={
         <Link className="ms-button ms-button--ghost ms-button--sm" to={`/baralhos/${id}`}>
-          Encerrar
+          {t.review.end}
         </Link>
       }
     >
@@ -163,7 +158,8 @@ export default function ReviewSessionPage() {
               <p className="review-session__detail">
                 {card.partOfSpeech}
                 {card.partOfSpeech && card.synonyms?.length > 0 ? ' · ' : ''}
-                {card.synonyms?.length > 0 && `sinônimos: ${card.synonyms.join(', ')}`}
+                {card.synonyms?.length > 0 &&
+                  t.deckDetail.cardItem.synonymsPrefix(card.synonyms.join(', '))}
               </p>
             )}
 
@@ -183,7 +179,7 @@ export default function ReviewSessionPage() {
 
       {!revealed && (
         <div className="review-session__actions">
-          <Button onClick={() => setRevealed(true)}>Revelar</Button>
+          <Button onClick={() => setRevealed(true)}>{t.review.reveal}</Button>
         </div>
       )}
 
@@ -202,7 +198,7 @@ export default function ReviewSessionPage() {
               >
                 {label}
                 <span className="review-session__grade-preview">
-                  {formatDueIn(preview.dueAt, now)}
+                  {formatDueIn(preview.dueAt, now, t)}
                 </span>
               </Button>
             )

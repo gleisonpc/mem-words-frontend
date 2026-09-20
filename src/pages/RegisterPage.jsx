@@ -5,6 +5,7 @@ import useAuth from '../auth/useAuth'
 import useAuthForm from '../auth/useAuthForm'
 import { collect, validateEmail, validateName, validateNewPassword } from '../auth/validation'
 import { Alert, Button, Input } from '../components/ui'
+import useTranslations, { getTranslations } from '../i18n/useTranslations'
 import AuthScreen from './AuthScreen'
 
 function validate(values) {
@@ -24,12 +25,13 @@ function describeError(error) {
     return { variant: 'warning', message: error.message }
   }
 
-  return { variant: 'danger', message: error.message ?? 'Não foi possível criar sua conta.' }
+  return { variant: 'danger', message: error.message ?? getTranslations().auth.register.genericError }
 }
 
 export default function RegisterPage() {
   const { signUp, notice } = useAuth()
   const location = useLocation()
+  const t = useTranslations()
 
   // Como na entrada, quem navega depois do sucesso é o `GuestOnly`.
   const submit = useCallback(async (values) => signUp(values), [signUp])
@@ -43,12 +45,12 @@ export default function RegisterPage() {
 
   return (
     <AuthScreen
-      title="Criar conta"
+      title={t.auth.register.title}
       footer={
         <>
-          Já tem conta?{' '}
+          {t.auth.register.hasAccount}{' '}
           <Link to="/entrar" state={location.state}>
-            Entrar
+            {t.auth.register.signIn}
           </Link>
         </>
       }
@@ -59,7 +61,7 @@ export default function RegisterPage() {
 
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <Input
-          label="Nome"
+          label={t.auth.fields.name}
           name="name"
           autoComplete="name"
           autoFocus
@@ -70,7 +72,7 @@ export default function RegisterPage() {
         />
 
         <Input
-          label="E-mail"
+          label={t.auth.fields.email}
           type="email"
           name="email"
           autoComplete="email"
@@ -81,11 +83,11 @@ export default function RegisterPage() {
         />
 
         <Input
-          label="Senha"
+          label={t.auth.fields.password}
           type="password"
           name="password"
           autoComplete="new-password"
-          help="Ao menos 8 caracteres."
+          help={t.auth.register.passwordHelp}
           value={values.password}
           onChange={change('password')}
           error={fieldErrors.password}
@@ -94,7 +96,7 @@ export default function RegisterPage() {
 
         <div className="auth-form__actions">
           <Button type="submit" loading={submitting}>
-            {submitting ? 'Criando conta...' : 'Criar conta'}
+            {submitting ? t.auth.register.submitting : t.auth.register.submit}
           </Button>
         </div>
       </form>

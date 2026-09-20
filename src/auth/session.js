@@ -1,4 +1,5 @@
 import { createContext } from 'react'
+import { getTranslations } from '../i18n/useTranslations'
 
 /**
  * Peças compartilhadas da sessão que não são componentes.
@@ -23,9 +24,7 @@ export const AuthContext = createContext(null)
  */
 export class AccountCreatedError extends Error {
   constructor(cause) {
-    super(
-      'Sua conta foi criada, mas não foi possível entrar automaticamente. Use seus dados para entrar.',
-    )
+    super(getTranslations().auth.session.accountCreatedButSignInFailed)
     this.name = 'AccountCreatedError'
     this.cause = cause
   }

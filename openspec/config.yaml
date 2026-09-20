@@ -16,7 +16,12 @@ context: |
   Render. O frontend é publicado na Vercel.
 
   Convenções:
-  - Textos de interface em português do Brasil.
+  - Interface em português do Brasil (padrão) ou inglês, escolhida na tela
+    de Perfil e persistida no navegador (`src/i18n/`, dicionários em
+    `src/i18n/dictionaries/pt.js` e `en.js`, consumidos via
+    `useTranslations()`). Comentários e documentação continuam só em
+    português — a escolha de idioma afeta só o texto de interface, não o
+    código.
   - Comentários e documentação em português.
   - Commits no formato conventional commits.
   - Suporte a tema claro e escuro via `prefers-color-scheme`.
