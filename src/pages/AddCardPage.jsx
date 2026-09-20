@@ -117,6 +117,14 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
       change('exampleSentence')({ target: { value: suggestion.exampleSentence } })
     }
 
+    if (suggestion.exampleTranslation !== undefined) {
+      change('exampleTranslation')({ target: { value: suggestion.exampleTranslation } })
+    }
+
+    if (suggestion.partOfSpeech !== undefined) {
+      change('partOfSpeech')({ target: { value: suggestion.partOfSpeech } })
+    }
+
     if (suggestion.synonyms !== undefined) {
       change('synonyms')({ target: { value: suggestion.synonyms.join(', ') } })
     }
@@ -141,6 +149,16 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
             )}
             {suggestion.exampleSentence && (
               <p className="add-card-suggestion__item">Exemplo: “{suggestion.exampleSentence}”</p>
+            )}
+            {suggestion.exampleTranslation && (
+              <p className="add-card-suggestion__item">
+                Tradução do exemplo: “{suggestion.exampleTranslation}”
+              </p>
+            )}
+            {suggestion.partOfSpeech && (
+              <p className="add-card-suggestion__item">
+                Classe gramatical: <strong>{suggestion.partOfSpeech}</strong>
+              </p>
             )}
             {suggestion.synonyms && (
               <p className="add-card-suggestion__item">

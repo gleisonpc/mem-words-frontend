@@ -172,6 +172,18 @@ indisponível". Rejeitada pelo requirement da proposta — a sugestão é um
 extra, e um alerta de erro para um extra que falhou chamaria atenção para
 algo que a pessoa não pediu.
 
+> **Correção pós-lançamento #4 — campos de tradução da frase e classe
+> gramatical nunca chegavam à tela:** `add-dictionary-suggestion-endpoint`
+> (`mem-words-backend`) ganhou `exampleTranslation` e `partOfSpeech` na
+> resposta do endpoint (mesma correção pós-lançamento lá), mas
+> `AddCardPage.jsx` só lia `translation`, `exampleSentence` e `synonyms` —
+> os dois campos novos nunca apareciam na caixa de sugestão nem eram
+> aplicados por "Usar sugestão", mesmo com o backend já os devolvendo.
+> Corrigido `applySuggestion` e o `Alert` da sugestão para tratar
+> `exampleTranslation`/`partOfSpeech` do mesmo jeito que os três campos
+> originais — sem lógica nova, só os mesmos dois `if` e duas linhas de
+> exibição a mais.
+
 ### Aplicar a sugestão sobrescreve os campos correspondentes
 
 "Usar sugestão" sobrescreve tradução, frase de exemplo e sinônimos com o que

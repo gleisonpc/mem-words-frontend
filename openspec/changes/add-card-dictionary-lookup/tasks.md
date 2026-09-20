@@ -59,3 +59,11 @@
 - [x] 9.4 Atualizar a spec delta (`specs/decks/screens/spec.md`) e `design.md` para descrever a busca por ação explícita, com estado de carregamento e mensagem de "nada encontrado", em vez da busca automática silenciosa
 - [x] 9.5 Rodar `npm run lint` e `npm run build` e confirmar que passam sem erros
 - [x] 9.6 Testado manualmente contra o backend local: botão desabilitado com o campo vazio, estado de carregando visível durante a busca, sugestão aplicável ao ser encontrada, mensagem de "nada encontrado" para um par não reconhecido, e o resultado anterior some ao editar a palavra ou trocar o baralho
+
+## 10. Correção pós-lançamento: tradução da frase e classe gramatical não chegavam à tela
+
+- [x] 10.1 Reproduzido: `add-dictionary-suggestion-endpoint` já devolve `exampleTranslation` e `partOfSpeech` (correção pós-lançamento própria daquele change), mas `AddCardPage.jsx` não lia nenhum dos dois — "Tradução da frase" e "Classe gramatical" continuavam sempre vazios mesmo com "Usar sugestão"
+- [x] 10.2 Em `applySuggestion` (`AddCardPage.jsx`), aplicar `suggestion.exampleTranslation` e `suggestion.partOfSpeech` aos campos de mesmo nome, do mesmo jeito que `translation`/`exampleSentence`/`synonyms`
+- [x] 10.3 Exibir `exampleTranslation` e `partOfSpeech` na caixa de sugestão (`Alert`), quando presentes
+- [x] 10.4 Atualizar a spec delta (`specs/decks/screens/spec.md`) e `design.md` com a correção
+- [x] 10.5 Rodar `npm run lint` e `npm run build` e confirmar que passam sem erros
