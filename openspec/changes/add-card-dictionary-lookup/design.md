@@ -96,17 +96,19 @@ são a mesma regra de validação (espelha o backend) em dois lugares — a
 motivação já registrada no requirement "Validação no cliente espelhando as
 regras do backend" para não ter duas fontes da mesma regra.
 
-### Sugestão automática: busca ao perder o foco na palavra, decidida pelo backend
+### Sugestão de dicionário: busca acionada por botão, decidida pelo backend
 
-A busca dispara quando o campo Palavra perde o foco (`onBlur`), não a cada
-tecla — evita uma chamada por caractere digitado. `dictionaryLookup.js`
-chama `GET /dictionary/suggest?word=&sourceLanguage=&targetLanguage=` no
+A busca dispara quando a ação "Buscar sugestão" é acionada (ver Correção
+#3 abaixo — a primeira versão disparava ao perder o foco do campo
+Palavra). `dictionaryLookup.js` chama
+`GET /dictionary/suggest?word=&sourceLanguage=&targetLanguage=` no
 backend, que decide sozinho se o par de idiomas é reconhecido (a tabela de
 idiomas, a resolução do par em qualquer sentido, e as três chamadas a
-Wiktionary/Datamuse/MyMemory vivem lá agora — ver Correções abaixo) e
-responde `{ suggestion: {...} | null }`. A caixa de sugestão só aparece
-quando `suggestion` traz ao menos um campo; se vier `null`, nada é exibido,
-sem mensagem de "sem sugestão" (silencioso, como o requirement pede).
+Wiktionary/Datamuse/Google Tradutor vivem lá agora — ver Correções
+abaixo) e responde `{ suggestion: {...} | null }`. A caixa de sugestão
+aparece quando `suggestion` traz ao menos um campo; quando vier `null`,
+a tela mostra uma mensagem informando que nada foi encontrado (ver
+Correção #3) — não mais silêncio total.
 
 > **Correção pós-merge #1 (verificada em produção):** a primeira versão
 > resolvia o par de idiomas no navegador e exigia que fosse
@@ -134,11 +136,26 @@ sem mensagem de "sem sugestão" (silencioso, como o requirement pede).
 > `request()` de `client.js`; o navegador não fala mais com nenhum dos três
 > serviços externos.
 
-Alternativa descartada: debounce a cada tecla digitada. Rejeitada porque
-a busca é por palavra inteira — buscar a cada poucas teclas geraria uma
-sequência de requisições descartadas sem necessidade; `onBlur` já cobre o
-caso de uso (preencher a palavra e seguir para o próximo campo) com uma
-única chamada.
+> **Correção pós-lançamento #3 — botão explícito, estado visível:** a
+> primeira versão buscava automaticamente ao sair do campo Palavra
+> (`onBlur`), sem indicar que uma busca estava em curso, nem que ela não
+> encontrou nada — quem usava não tinha como distinguir "o recurso não
+> funciona" de "esta palavra não tem sugestão". Trocado por um botão
+> ("Buscar sugestão", desabilitado com o campo vazio) que mostra estado de
+> carregando enquanto a busca corre, e uma mensagem ("Nenhuma sugestão
+> encontrada para esta palavra.") quando ela termina sem nada — cobrindo os
+> três motivos de "sem sugestão" (par não reconhecido, serviço
+> indisponível, sem conteúdo aproveitável) com a mesma mensagem neutra, sem
+> distinguir a causa para quem usa. Editar a palavra ou trocar o baralho
+> depois de uma busca já concluída descarta o resultado (sugestão ou
+> mensagem) — deixou de corresponder ao que está nos campos.
+
+Alternativa descartada: debounce a cada tecla digitada, mantendo a busca
+automática. Rejeitada duas vezes: primeiro porque a busca é por palavra
+inteira — buscar a cada poucas teclas geraria requisições descartadas sem
+necessidade; depois, com a Correção #3, porque um botão explícito resolve
+o problema de fundo (a pessoa não sabia que uma busca tinha acontecido)
+melhor do que qualquer ajuste de quando a busca automática dispara.
 
 ### Cliente de dicionário chama o backend, com falha nunca lançada
 
@@ -147,7 +164,8 @@ caso de uso (preencher a palavra e seguir para o próximo campo) com uma
 limite e a mesma renovação de sessão de qualquer outra chamada ao backend,
 sem lógica própria de rede. Sua função principal continua nunca lançando:
 qualquer falha (rede, tempo limite, backend fora do ar) vira `null`, e a
-tela decide não mostrar nada.
+tela trata isso como "nenhuma sugestão encontrada" (Correção #3) — nunca
+como erro.
 
 Alternativa descartada: propagar erro e mostrar um alerta de "sugestão
 indisponível". Rejeitada pelo requirement da proposta — a sugestão é um
@@ -161,8 +179,9 @@ foi encontrado, mesmo que a pessoa já tivesse digitado algo neles —
 mais simples de prever do que uma regra de "só preenche campo vazio", e
 consistente com o mockup, que oferece "Usar sugestão"/"Descartar" como
 escolha binária antes de qualquer edição manual nesses campos. Depois de
-aplicada, os campos continuam editáveis normalmente. Um segundo `onBlur` com
-a palavra alterada substitui a caixa de sugestão anterior (não acumula).
+aplicada, os campos continuam editáveis normalmente. Uma nova busca, ou a
+troca de palavra/baralho (Correção #3), substitui a caixa de sugestão
+anterior — não acumula.
 
 ## Risks / Trade-offs
 

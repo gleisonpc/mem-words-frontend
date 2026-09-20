@@ -50,3 +50,12 @@
 - [x] 8.2 Em `AddCardPage.jsx`, remover o pré-check local com `resolveLanguagePair` em `handleWordBlur` — a tela sempre chama `fetchSuggestion` quando a palavra não está vazia, e o backend decide sozinho se o par é reconhecido
 - [x] 8.3 Rodar `npm run lint` e `npm run build` e confirmar que passam sem erros
 - [x] 8.4 Testado de ponta a ponta (Chromium/Playwright) contra o backend local com o endpoint novo, capturando toda requisição de rede: sugestão apareceu para o par invertido real ("Portugues"/"ingles", tradução/exemplo/sinônimos reais), nenhuma caixa apareceu para um par não reconhecido (Klingon/Vulcano), e a captura de rede confirmou 2 chamadas a `/dictionary/suggest` (o próprio backend) e **zero** chamadas diretas a Wiktionary/Datamuse/MyMemory
+
+## 9. Correção pós-lançamento: busca por botão, com estado visível
+
+- [x] 9.1 Em `cardForm.jsx`, trocar a prop `onWordBlur` de `CardFields` por `wordSearch` (slot renderizado logo após Tradução, antes de Sinônimos)
+- [x] 9.2 Em `AddCardPage.jsx`, trocar a busca automática em `onBlur` por um botão "Buscar sugestão" (desabilitado com a palavra vazia), com estados `searching` (carregando) e `searchedEmpty` (busca concluída sem nada), exibindo "Buscando sugestão..." no botão e "Nenhuma sugestão encontrada para esta palavra." abaixo dele quando aplicável
+- [x] 9.3 Editar a palavra ou trocar o baralho depois de uma busca concluída limpa a sugestão e a mensagem de "nada encontrado" (mesmo padrão de invalidação por `suggestionRequestId` já existente)
+- [x] 9.4 Atualizar a spec delta (`specs/decks/screens/spec.md`) e `design.md` para descrever a busca por ação explícita, com estado de carregamento e mensagem de "nada encontrado", em vez da busca automática silenciosa
+- [x] 9.5 Rodar `npm run lint` e `npm run build` e confirmar que passam sem erros
+- [x] 9.6 Testado manualmente contra o backend local: botão desabilitado com o campo vazio, estado de carregando visível durante a busca, sugestão aplicável ao ser encontrada, mensagem de "nada encontrado" para um par não reconhecido, e o resultado anterior some ao editar a palavra ou trocar o baralho

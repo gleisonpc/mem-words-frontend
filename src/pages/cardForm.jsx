@@ -69,18 +69,18 @@ export const EMPTY_CARD_VALUES = {
 }
 
 /**
- * Campos de um card. `onWordBlur` é opcional — só a tela de criação passa
- * algo (a busca de sugestão de dicionário); a edição não tenta sugerir nada
- * para uma palavra que já existe.
+ * Campos de um card. `wordSearch` é opcional — só a tela de criação passa
+ * algo (o botão e o status da busca de sugestão de dicionário, que entram
+ * logo abaixo do par Palavra/Tradução, em largura cheia); a edição não
+ * tenta sugerir nada para uma palavra que já existe.
  *
  * `extraField` entra entre Sinônimos e Classe gramatical: é onde a tela de
- * criação encaixa o campo Baralho, para que os dois formem um par visual com
- * Palavra/Tradução acima — os demais campos, sem par definido no mockup,
- * ficam em largura cheia via `ms-field--full` (efeito só dentro de um
- * container em grid; em `.deck-form`, que é flex-column, a classe não muda
- * nada).
+ * criação encaixa o campo Baralho, para que os dois formem um par visual
+ * entre si — os demais campos, sem par definido no mockup, ficam em largura
+ * cheia via `ms-field--full` (efeito só dentro de um container em grid; em
+ * `.deck-form`, que é flex-column, a classe não muda nada).
  */
-export function CardFields({ values, change, fieldErrors, disabled, onWordBlur, extraField }) {
+export function CardFields({ values, change, fieldErrors, disabled, wordSearch, extraField }) {
   return (
     <>
       <Input
@@ -88,7 +88,6 @@ export function CardFields({ values, change, fieldErrors, disabled, onWordBlur, 
         name="word"
         value={values.word}
         onChange={change('word')}
-        onBlur={onWordBlur}
         error={fieldErrors.word}
         disabled={disabled}
       />
@@ -100,6 +99,7 @@ export function CardFields({ values, change, fieldErrors, disabled, onWordBlur, 
         error={fieldErrors.translation}
         disabled={disabled}
       />
+      {wordSearch}
       <Input
         label="Sinônimos"
         name="synonyms"

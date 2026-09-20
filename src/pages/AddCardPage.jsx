@@ -25,6 +25,11 @@ function isUnavailable(error) {
 function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
   const [deckId, setDeckId] = useState(urlDeckId)
   const [suggestion, setSuggestion] = useState(null)
+  const [searching, setSearching] = useState(false)
+  // `null` = ainda não buscou por esta palavra; `true`/`false` depois de uma
+  // busca concluída, para mostrar "nada encontrado" só quando cabe — e não
+  // antes da primeira busca, nem enquanto uma está em curso.
+  const [searchedEmpty, setSearchedEmpty] = useState(false)
 
   // Descarta qualquer sugestão em curso quando a palavra ou o baralho
   // escolhido mudam antes dela responder — evita aplicar uma sugestão para
@@ -51,6 +56,7 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
   const handleWordChange = (event) => {
     suggestionRequestId.current += 1
     setSuggestion(null)
+    setSearchedEmpty(false)
     change('word')(event)
   }
 
@@ -62,10 +68,15 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
   const handleDeckChange = (event) => {
     suggestionRequestId.current += 1
     setSuggestion(null)
+    setSearchedEmpty(false)
     setDeckId(event.target.value)
   }
 
-  const handleWordBlur = useCallback(async () => {
+  // Busca acionada por um botão explícito, não mais ao sair do campo: a
+  // pessoa vê exatamente quando a busca começa e termina (estado de
+  // carregando, e uma mensagem quando não encontra nada), em vez de uma
+  // sugestão que aparece — ou não — sem nenhum sinal de que algo aconteceu.
+  const handleSearchClick = useCallback(async () => {
     const word = values.word.trim()
     const selectedDeck = deckOptions.find((deck) => deck.id === deckId)
 
@@ -73,9 +84,13 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
       return
     }
 
+    const requestId = ++suggestionRequestId.current
+    setSearching(true)
+    setSuggestion(null)
+    setSearchedEmpty(false)
+
     // O backend decide se o par de idiomas é reconhecido — responde
     // `suggestion: null` sem chamar serviço externo algum quando não é.
-    const requestId = ++suggestionRequestId.current
     const found = await fetchSuggestion({
       word,
       sourceLanguage: selectedDeck.sourceLanguage,
@@ -88,7 +103,9 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
       return
     }
 
+    setSearching(false)
     setSuggestion(found)
+    setSearchedEmpty(found === null)
   }, [values.word, deckId, deckOptions])
 
   const applySuggestion = () => {
@@ -105,6 +122,7 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
     }
 
     setSuggestion(null)
+    setSearchedEmpty(false)
   }
 
   return (
@@ -153,7 +171,25 @@ function AddCardForm({ urlDeckId, deckOptions, onSaved }) {
           change={fieldChange}
           fieldErrors={fieldErrors}
           disabled={submitting}
-          onWordBlur={handleWordBlur}
+          wordSearch={
+            <div className="add-card-search ms-field--full">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                loading={searching}
+                disabled={values.word.trim() === '' || submitting}
+                onClick={handleSearchClick}
+              >
+                {searching ? 'Buscando sugestão...' : 'Buscar sugestão'}
+              </Button>
+              {searchedEmpty && (
+                <span className="add-card-search__status">
+                  Nenhuma sugestão encontrada para esta palavra.
+                </span>
+              )}
+            </div>
+          }
           extraField={
             <div className="ms-field">
               <label className="ms-field__label" htmlFor="add-card-deck">
