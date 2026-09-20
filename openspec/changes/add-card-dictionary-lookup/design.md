@@ -101,11 +101,28 @@ regras do backend" para não ter duas fontes da mesma regra.
 Tabela local, em `src/api/dictionaryLookup.js`, mapeando texto comum (em
 português e inglês, sem diferenciar maiúsculas/acentos) para um código: pelo
 menos inglês, português, espanhol, francês, alemão, italiano e japonês. A
-sugestão só é buscada quando o idioma de origem do baralho escolhido mapeia
-para inglês (`en`) — os dois serviços de dicionário/sinônimos escolhidos só
-cobrem inglês — e o idioma de destino mapeia para algum código da tabela (a
-tradução usa esse código). Fora disso, a tela nunca chama os serviços
-externos: não há "tentativa que falha", porque o par não é reconhecido.
+sugestão só é buscada quando um dos dois lados do par — origem ou destino,
+em qualquer ordem — mapeia para inglês (`en`) e o outro mapeia para algum
+código da tabela.
+
+> **Correção pós-merge (verificada em produção):** a primeira versão exigia
+> que fosse especificamente o idioma de *origem* a mapear para inglês.
+> Baralhos reais, porém, guardam o par nos dois sentidos — "Inglês →
+> Português" e "Português → Inglês" — porque o backend não amarra
+> `sourceLanguage`/`targetLanguage` a qual campo do card (`word`/
+> `translation`) cada um descreve; é só texto livre. Um baralho de produção
+> com `sourceLanguage: "Portugues"` e `targetLanguage: "ingles"` (card em
+> inglês, tradução em português) não disparava a sugestão nenhuma, sem
+> nenhum erro visível — o comportamento "par não reconhecido" mascarava o
+> que era, na prática, o par mais comum. `resolveLanguagePair` agora aceita
+> os dois sentidos: o lado que mapeia para inglês vira `source` (o que
+> entra nas buscas de definição/sinônimos), e o outro lado vira `target` (o
+> código da tradução), qualquer que seja a ordem em que estejam no baralho.
+
+É sempre a palavra em inglês que entra nas buscas de definição/sinônimos —
+os dois serviços escolhidos só cobrem inglês. Fora do reconhecido em
+qualquer sentido, a tela nunca chama os serviços externos: não há
+"tentativa que falha", porque o par não é reconhecido.
 
 A busca dispara quando o campo Palavra perde o foco (`onBlur`), não a cada
 tecla — evita uma chamada por caractere digitado. As três chamadas (Wiktionary,

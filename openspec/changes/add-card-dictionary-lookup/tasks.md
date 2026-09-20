@@ -36,3 +36,10 @@
 - [x] 6.1 Rodar `npm run lint` e confirmar que passa sem erros
 - [x] 6.2 Rodar `npm run build` e confirmar que o build de produção passa sem erros
 - [x] 6.3 Testado no dev server contra um backend local (Postgres real, migrations aplicadas): cadastro, criar baralho, criar card com sugestão aplicada e sem sugestão (par não reconhecido), "salvar e criar outra" limpando o formulário, "Salvar" voltando para o detalhe com os dois cards na lista, e os estados de baralho indisponível (id inexistente) e carregando na tela nova
+
+## 7. Correção pós-merge: par de idiomas invertido não disparava sugestão
+
+- [x] 7.1 Reproduzido em produção (`mem-words-frontend.vercel.app`) contra um baralho real do usuário (`sourceLanguage: "Portugues"`, `targetLanguage: "ingles"`): nenhuma requisição aos três serviços saía ao sair do campo Palavra — `resolveLanguagePair` exigia que fosse especificamente a *origem* a mapear para inglês, e baralhos reais guardam o par nos dois sentidos
+- [x] 7.2 Corrigido `resolveLanguagePair` em `src/api/dictionaryLookup.js` para aceitar o par em qualquer ordem — o lado que mapeia para inglês vira `source` (usado nas buscas de definição/sinônimos), o outro vira `target` (código da tradução)
+- [x] 7.3 Verificado com um script Node isolado: `resolveLanguagePair('Portugues', 'ingles')` e `resolveLanguagePair('ingles', 'Portugues')` agora devolvem o mesmo par resolvido, e `fetchSuggestion` com o par invertido do usuário devolveu tradução, frase de exemplo e sinônimos reais
+- [x] 7.4 `npm run lint` e `npm run build` continuam passando sem erros

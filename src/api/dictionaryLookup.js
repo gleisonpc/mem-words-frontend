@@ -65,20 +65,29 @@ function languageCode(text) {
  * Resolve o par de idiomas de um baralho para os códigos que os serviços de
  * dicionário/tradução usam, ou `null` quando o par não é reconhecido.
  *
- * A origem precisa mapear para inglês — Wiktionary e Datamuse, os serviços
- * de definição/exemplo e sinônimos, só cobrem palavras em inglês — e o
- * destino precisa mapear para algum código da tabela, porque é o que a
- * tradução usa.
+ * Um dos dois — origem ou destino, em qualquer ordem — precisa mapear para
+ * inglês: Wiktionary e Datamuse, os serviços de definição/exemplo e
+ * sinônimos, só cobrem palavras em inglês, e é sempre a palavra em inglês
+ * que entra nessas buscas. O backend não amarra `sourceLanguage`/
+ * `targetLanguage` a qual campo do card (`word`/`translation`) cada um
+ * descreve — baralhos reais têm os dois pares, "Inglês → Português" e
+ * "Português → Inglês" — então os dois sentidos precisam ser reconhecidos
+ * igualmente. O outro lado precisa mapear para algum código da tabela,
+ * porque é o que a tradução usa.
  */
 export function resolveLanguagePair(sourceLanguage, targetLanguage) {
   const source = languageCode(sourceLanguage)
   const target = languageCode(targetLanguage)
 
-  if (source !== 'en' || target === null) {
-    return null
+  if (source === 'en' && target !== null) {
+    return { source, target }
   }
 
-  return { source, target }
+  if (target === 'en' && source !== null) {
+    return { source: target, target: source }
+  }
+
+  return null
 }
 
 function stripTags(html) {
