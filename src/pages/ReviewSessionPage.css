@@ -74,3 +74,10 @@
   font-weight: var(--weight-regular);
   opacity: 0.8;
 }
+
+/* Breakpoint mobile — ver comentário BREAKPOINT_MOBILE em tokens.css. */
+@media (max-width: 480px) {
+  .review-session__grades {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

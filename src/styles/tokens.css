@@ -271,3 +271,17 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------- Breakpoint mobile ----------
+ *
+ * BREAKPOINT_MOBILE = 480px — largura abaixo da qual o layout é de celular.
+ *
+ * CSS não permite `var()` na condição de um `@media` (`@media (max-width:
+ * var(--x))` não é válido), então este valor não pode ser uma custom
+ * property consultada dentro da media query. Este comentário é a fonte
+ * única de verdade: todo `@media (max-width: 480px)` de layout responsivo
+ * do projeto SHALL repetir esse literal e citar este comentário. Para
+ * auditar onde o breakpoint é usado, faça grep por `480px` — não há
+ * indireção de `var()` possível. Ver design.md do change
+ * `fix-mobile-responsive-layout`.
+ */
