@@ -15,6 +15,13 @@
   grid-column: 1 / -1;
 }
 
+/* Breakpoint mobile — ver comentário BREAKPOINT_MOBILE em tokens.css. */
+@media (max-width: 480px) {
+  .add-card-form__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .add-card-search {
   display: flex;
   flex-wrap: wrap;
