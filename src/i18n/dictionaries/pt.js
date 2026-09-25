@@ -185,6 +185,10 @@ export default {
     form: {
       unknownError: 'Não foi possível concluir a operação. Tente novamente.',
     },
+    google: {
+      orDivider: 'ou',
+      unavailable: 'Não foi possível entrar com o Google. Tente novamente.',
+    },
   },
   home: {
     greetingMorning: 'Bom dia',

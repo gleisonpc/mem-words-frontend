@@ -44,6 +44,20 @@ Vercel e publique novamente.
 > O frontend é publicado na **Vercel** e o backend no **Render**. Como são
 > origens diferentes, o backend precisa liberar CORS para a origem do frontend.
 
+### Entrar com o Google
+
+O botão "Entrar com o Google" (Google Identity Services) exige
+`VITE_GOOGLE_CLIENT_ID` — sem ela, o botão simplesmente não aparece, e o
+formulário de e-mail e senha continua funcionando normalmente.
+
+```bash
+VITE_GOOGLE_CLIENT_ID=seu-client-id.apps.googleusercontent.com
+```
+
+Precisa ser o **mesmo** Client ID configurado no backend (`GOOGLE_CLIENT_ID`)
+— valores diferentes fazem todo login com Google falhar com um erro genérico
+do backend.
+
 ### Diagnóstico
 
 A tela `/diagnostico` informa de onde veio a URL deste build:

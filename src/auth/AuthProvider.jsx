@@ -128,6 +128,22 @@ export function AuthProvider({ children }) {
   }, [])
 
   /**
+   * Entra com um ID token do Google — mesmo resultado observável de `signIn`,
+   * só troca a chamada de API. O backend decide, pelo e-mail verificado do
+   * token, se criou conta nova ou autenticou uma já existente; esta função
+   * não precisa saber qual dos dois aconteceu.
+   */
+  const signInWithGoogle = useCallback(async (idToken) => {
+    const { user, accessToken } = await authApi.loginWithGoogle({ idToken })
+
+    tokenStore.setSession({ accessToken, user })
+    setState({ status: AUTHENTICATED, user, signedOut: false })
+    setNotice(null)
+
+    return user
+  }, [])
+
+  /**
    * Cadastra e entra em seguida.
    *
    * São duas chamadas porque o backend não emite tokens no cadastro. A ordem
@@ -214,13 +230,24 @@ export function AuthProvider({ children }) {
       signedOut: state.signedOut,
       notice,
       signIn,
+      signInWithGoogle,
       signUp,
       signOut,
       updateProfile,
       deleteAccount,
       dismissNotice,
     }),
-    [state, notice, signIn, signUp, signOut, updateProfile, deleteAccount, dismissNotice],
+    [
+      state,
+      notice,
+      signIn,
+      signInWithGoogle,
+      signUp,
+      signOut,
+      updateProfile,
+      deleteAccount,
+      dismissNotice,
+    ],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -1,10 +1,13 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { Link, useLocation } from 'react-router'
+import ApiError from '../api/ApiError'
+import GoogleSignInButton from '../auth/GoogleSignInButton'
 import { AccountCreatedError } from '../auth/session'
 import useAuth from '../auth/useAuth'
 import useAuthForm from '../auth/useAuthForm'
 import { collect, validateEmail, validateName, validateNewPassword } from '../auth/validation'
 import { Alert, Button, Input } from '../components/ui'
+import { GOOGLE_CLIENT_ID } from '../config'
 import useTranslations, { getTranslations } from '../i18n/useTranslations'
 import AuthScreen from './AuthScreen'
 
@@ -29,7 +32,7 @@ function describeError(error) {
 }
 
 export default function RegisterPage() {
-  const { signUp, notice } = useAuth()
+  const { signUp, signInWithGoogle, notice, dismissNotice } = useAuth()
   const location = useLocation()
   const t = useTranslations()
 
@@ -42,6 +45,31 @@ export default function RegisterPage() {
     submit,
     describeError,
   })
+
+  // Mesmo mecanismo de `LoginPage`: erro do fluxo do Google separado do erro
+  // do formulário de credenciais, exibido pelo mesmo `Alert`.
+  const [googleError, setGoogleError] = useState(null)
+
+  const handleGoogleSuccess = useCallback(
+    async (idToken) => {
+      dismissNotice()
+      setGoogleError(null)
+
+      try {
+        await signInWithGoogle(idToken)
+      } catch (error) {
+        setGoogleError({
+          variant: 'danger',
+          message: error instanceof ApiError ? error.message : t.auth.google.unavailable,
+        })
+      }
+    },
+    [dismissNotice, signInWithGoogle, t],
+  )
+
+  const handleGoogleError = useCallback(() => {
+    setGoogleError({ variant: 'danger', message: t.auth.google.unavailable })
+  }, [t])
 
   return (
     <AuthScreen
@@ -58,6 +86,7 @@ export default function RegisterPage() {
       {notice && <Alert variant={notice.variant}>{notice.message}</Alert>}
 
       {generalError && <Alert variant={generalError.variant}>{generalError.message}</Alert>}
+      {googleError && <Alert variant={googleError.variant}>{googleError.message}</Alert>}
 
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <Input
@@ -100,6 +129,13 @@ export default function RegisterPage() {
           </Button>
         </div>
       </form>
+
+      {GOOGLE_CLIENT_ID !== '' && (
+        <>
+          <div className="auth-form__divider">{t.auth.google.orDivider}</div>
+          <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+        </>
+      )}
     </AuthScreen>
   )
 }

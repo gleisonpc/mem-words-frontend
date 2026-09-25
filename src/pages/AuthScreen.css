@@ -47,3 +47,29 @@
   font-size: var(--text-sm);
   text-align: center;
 }
+
+/* Divisor entre o formulário de credenciais e o botão do Google. */
+.auth-form__divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-2) 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.auth-form__divider::before,
+.auth-form__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* O botão em si é renderizado pela biblioteca do Google — este contêiner só
+   cuida do alinhamento (ver design.md, "Botão do Google como componente
+   próprio"). */
+.google-sign-in-button {
+  display: flex;
+  justify-content: center;
+}

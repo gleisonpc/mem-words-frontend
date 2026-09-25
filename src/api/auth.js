@@ -27,6 +27,16 @@ export function login({ email, password }) {
   return request('/auth/login', { method: 'POST', body: { email, password } })
 }
 
+/**
+ * Autentica com um ID token do Google (Google Identity Services) e devolve
+ * o usuário com o token de acesso — mesmo formato de `login`. O backend
+ * decide, pelo e-mail verificado do token, se cria conta nova ou vincula a
+ * uma já existente; esta chamada não distingue os dois casos.
+ */
+export function loginWithGoogle({ idToken }) {
+  return request('/auth/google', { method: 'POST', body: { idToken } })
+}
+
 /** Troca o token de acesso. Reaproveita a renovação de disparo único do cliente. */
 export function refresh() {
   return renewTokens()
