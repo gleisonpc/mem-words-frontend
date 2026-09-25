@@ -184,6 +184,10 @@ export default {
     form: {
       unknownError: 'Could not complete the operation. Try again.',
     },
+    google: {
+      orDivider: 'or',
+      unavailable: 'Could not sign in with Google. Try again.',
+    },
   },
   home: {
     greetingMorning: 'Good morning',

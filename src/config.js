@@ -34,3 +34,15 @@ export const API_URL_SOURCE = configured
   : import.meta.env.DEV
     ? 'padrão de desenvolvimento'
     : 'padrão de produção'
+
+/**
+ * Client ID OAuth 2.0 Web do Google Cloud Console, usado para inicializar o
+ * Google Identity Services no navegador — o mesmo valor configurado no
+ * backend (`GOOGLE_CLIENT_ID`).
+ *
+ * Diferente de `API_URL`, não há padrão embutido possível: sem esta
+ * variável, "Entrar com o Google" simplesmente não aparece — não é uma URL
+ * alternativa, é a ausência da funcionalidade (ver design.md, "Ausência de
+ * VITE_GOOGLE_CLIENT_ID desliga o botão, não é erro").
+ */
+export const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim()
